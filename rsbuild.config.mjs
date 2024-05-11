@@ -10,7 +10,7 @@ export default defineConfig({
     filenameHash: false,
     legalComments: 'none',
     distPath: {
-      root:'dist',
+      js: './',      css:'./'
     },
     copy: [{ from: './manifest.json', to: 'manifest.json' }]
   },
