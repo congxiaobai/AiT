@@ -9,30 +9,21 @@
     "scripting",
     "storage"
   ],
-  "options_page": "dist/index.html",
-  "background": {
-    "service_worker": "dist/static/js/index.js"
-  },
+  "options_page": "index.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["dist/static/js/lib-react.js","dist/static/js/index.js","dist/static/js/243.js"],
-      "css": ["dist/static/css/index.css"]
+      "css": ["/static/css/index.css"],
+      "js": ["/static/js/lib-react.js","/static/js/243.js","/static/js/index.js"]
     }
   ],
   "action": {
-    "default_popup": "dist/index.html",
+    "default_popup": "index.html",
     "default_icon": {
-      "16": "public/logo.png"
+      "16": "logo.png"
     }
   },
   "icons": {
-    "16": "public/logo.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [ "*.html","dist/*"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+    "16": "logo.png"
+  }
 }

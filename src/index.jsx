@@ -4,7 +4,7 @@ import App from './App';
 import { NextUIProvider } from '@nextui-org/react';
 import './App.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root-b61cd16c-3eff-812a-e4f1-1e4bad67eb54'));
 root.render(
   <React.StrictMode>
     <NextUIProvider>
