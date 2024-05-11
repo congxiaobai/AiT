@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "AiT",
+  "version": "1.0",
+  "description": "Automatically translates text on web pages using a custom GPT-based model.",
+  "permissions": [
+    "<all_urls>",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "options_page": "dist/index.html",
+  "background": {
+    "service_worker": "dist/static/js/index.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/static/js/lib-react.js","dist/static/js/index.js","dist/static/js/243.js"],
+      "css": ["dist/static/css/index.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "dist/index.html",
+    "default_icon": {
+      "16": "public/logo.png"
+    }
+  },
+  "icons": {
+    "16": "public/logo.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [ "*.html","dist/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
