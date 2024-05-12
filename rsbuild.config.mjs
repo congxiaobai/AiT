@@ -1,8 +1,9 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
+import { pluginSvgr } from '@rsbuild/plugin-svgr';
 
 export default defineConfig({
-  plugins: [pluginReact()],
+  plugins: [pluginReact(), pluginSvgr()],
   html: {
     template: './public/index.html',
   },
@@ -10,7 +11,10 @@ export default defineConfig({
     filenameHash: false,
     legalComments: 'none',
     distPath: {
-      js: './',      css:'./'
+      js: './', css: './'
+    },
+    sourceMap: {
+      js: 'source-map',
     },
     copy: [{ from: './manifest.json', to: 'manifest.json' }]
   },

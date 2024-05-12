@@ -15,6 +15,7 @@
   "devDependencies": {
     "@rsbuild/core": "^0.6.11",
     "@rsbuild/plugin-react": "^0.6.11",
+    "@rsbuild/plugin-svgr": "^0.6.13",
     "framer-motion": "^11.1.9",
     "tailwindcss": "^3.4.3"
   }
