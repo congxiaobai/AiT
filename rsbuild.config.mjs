@@ -16,6 +16,9 @@ export default defineConfig({
     sourceMap: {
       js: 'source-map',
     },
-    copy: [{ from: './manifest.json', to: 'manifest.json' }]
+    copy: [{ from: './manifest.json', to: 'manifest.json' },
+  
+    { from: './src/content.js', to: 'content.js' }
+  ]
   },
 });

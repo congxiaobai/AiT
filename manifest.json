@@ -12,8 +12,14 @@
   "options_page": "index.html",
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css": ["index.css"]
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ],
   "action": {
@@ -22,6 +28,16 @@
       "16": "logo.png"
     }
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "index.css",
+        "logo.png",
+        "arrow.svg"
+      ],
+      "matches": []
+    }
+  ],
   "icons": {
     "16": "logo.png"
   }
