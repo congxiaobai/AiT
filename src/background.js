@@ -20,28 +20,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 async function translateText(textArray) {
 
-        const { model, apiKey } = await new Promise<Settings>((resolve) => {
-                chrome.storage.sync.get(['model', 'apiKey'], (items) => {
-                        resolve(items);
-                });
-        });
-
-        if (!model || !apiKey) {
-                console.error('Model or API key not set');
-                return JSON.stringify({ messages: textArray });
-        }
-        if (textArray.length === 0) {
-                return JSON.stringify({ messages: textArray });
-        }
-
+        console.log("Translating text: ", textArray);
+        try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
+                      
                 },
                 body: JSON.stringify({
-                        model: model, // Specify the model
+          
                         messages: [
                                 { role: "system", content: basePrompt },
                                 { role: "user", content: JSON.stringify(textArray) }
@@ -55,7 +43,7 @@ async function translateText(textArray) {
         console.log("Total requests made: ", runningTotalRequest++);
         const translatedText = data.choices[0].message.content.trim();
 
-        try {
+       
                 const parsedTranslation = JSON.parse(translatedText);
                 if (parsedTranslation.messages && Array.isArray(parsedTranslation.messages)) {
                         return parsedTranslation.messages;

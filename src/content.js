@@ -3,21 +3,25 @@ const preferredLanguage = navigator.language.split('-')[0];
 let detectedLanguage = '';
 
 if (document.readyState !== 'loading') {
-        setTimeout(() => startTranslation(), 500);  // specify batch size
+        setTimeout(() => startTranslation());  // specify batch size
 } else {
         document.addEventListener('DOMContentLoaded', function () {
 
-                setTimeout(() => startTranslation(), 500);  // specify batch size
+                setTimeout(() => startTranslation());  // specify batch size
         });
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        console.log(message.greeting);
-        // 发送响应消息
+        if (message.action === 'translateRequest') {
+                gatherTextNodes(document.body).then(allTextNodes => {
+                        console.log("Making " + allTextNodes.length / batchSize + " total requests");
+                        translateInBatches(allTextNodes, batchSize);
+                });
+              
+        }
         sendResponse({ farewell: 'Goodbye' });
-        setTimeout(() => chrome.runtime.sendMessage({ action: "translate", text: '获取了文本' }, function (response) {
-                console.log('发送文本成功')
-        }), 500);
+        // 发送响应消息
+        return true;
 
 });
 
