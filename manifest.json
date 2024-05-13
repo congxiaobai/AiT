@@ -9,7 +9,7 @@
     "scripting",
     "storage"
   ],
-  "options_page": "index.html",
+  "options_page": "setting.html",
   "content_scripts": [
     {
       "matches": [
@@ -22,6 +22,9 @@
       ]
     }
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": {

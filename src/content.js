@@ -6,23 +6,20 @@ if (document.readyState !== 'loading') {
         setTimeout(() => startTranslation(), 500);  // specify batch size
 } else {
         document.addEventListener('DOMContentLoaded', function () {
-                // dectLang()
-                // chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-                //         console.log({ contentMessage: request })
-                //         if (request.action === "translateRequest") {
-                //                 //translateDocument(batchSize);
-                //                 sendResponse({ text: '翻译请求成功' })
-                //                 chrome.runtime.sendMessage({ action: "translate", text: '获取了文本' }, function (response) {
-                //                         console.log('发送文本成功')
-                //                 });
-                //                 return true;
-                //         }
-                // });
 
                 setTimeout(() => startTranslation(), 500);  // specify batch size
         });
 }
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        console.log(message.greeting);
+        // 发送响应消息
+        sendResponse({ farewell: 'Goodbye' });
+        setTimeout(() => chrome.runtime.sendMessage({ action: "translate", text: '获取了文本' }, function (response) {
+                console.log('发送文本成功')
+        }), 500);
+
+});
 
 async function startTranslation() {
         const sampleText = document.body.innerText;
@@ -30,9 +27,7 @@ async function startTranslation() {
         if (!detectedLanguage) {
                 return;
         }
-        chrome.runtime.sendMessage({ action: "detectedLanguage", detectedLanguage: detectedLanguage }, function (response) {
-                console.log('transform success')
-        });
+        chrome.storage.sync.set({ detecLang: detectedLanguage });
 }
 
 function watchForMutation() {
@@ -112,23 +107,23 @@ async function getLang(text) {
 }
 
 
-// chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-//         if (request.action === 'getDetectedLanguage') {
-//                 sendResponse({ detectedLanguage: detectedLanguage });
-//         } else if (request.action === 'startTranslation') {
-//                 const alwaysTranslate = request.alwaysTranslate;
-//                 if (alwaysTranslate) {
-//                         chrome.storage.sync.get('alwaysTranslateLanguages', function (data) {
-//                                 const alwaysTranslateLanguages = data.alwaysTranslateLanguages || [];
-//                                 if (!alwaysTranslateLanguages.includes(detectedLanguage)) {
-//                                         alwaysTranslateLanguages.push(detectedLanguage);
-//                                         chrome.storage.sync.set({ alwaysTranslateLanguages: alwaysTranslateLanguages });
-//                                 }
-//                         });
-//                 }
-//                 translateDocument(batchSize);
-//         }
-// });
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+        if (request.action === 'getDetectedLanguage') {
+                sendResponse({ detectedLanguage: detectedLanguage });
+        } else if (request.action === 'startTranslation') {
+                const alwaysTranslate = request.alwaysTranslate;
+                if (alwaysTranslate) {
+                        chrome.storage.sync.get('alwaysTranslateLanguages', function (data) {
+                                const alwaysTranslateLanguages = data.alwaysTranslateLanguages || [];
+                                if (!alwaysTranslateLanguages.includes(detectedLanguage)) {
+                                        alwaysTranslateLanguages.push(detectedLanguage);
+                                        chrome.storage.sync.set({ alwaysTranslateLanguages: alwaysTranslateLanguages });
+                                }
+                        });
+                }
+                translateDocument(batchSize);
+        }
+});
 
 
 

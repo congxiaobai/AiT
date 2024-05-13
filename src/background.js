@@ -3,7 +3,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 
-const basePrompt = "You will be given an array of text to translate into english. Output will be in the form of an ordered json array with key 'messages'";
+const basePrompt = "You will be given an array of text to translate into english.";
 
 let runningTotalRequest = 0;
 

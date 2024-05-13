@@ -4,7 +4,8 @@ import { Select, SelectItem } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
 
 import Logo from '../public/arrow.svg?react'
-import { useEffect, useRef, useState } from 'react';
+import SetIcon from '../public/setting.svg?react'
+import { useEffect, useState } from 'react';
 const source = [
   { label: "英文", value: "en" },
   { label: "中文", value: "zh" },
@@ -13,38 +14,27 @@ const source = [
   { label: "德文", value: "de" }
 ]
 
-async function getLang(text) {
-  const langResult = await chrome.i18n.detectLanguage(text);
-  return langResult.languages[0]?.language ?? "";
-}
-
 const App = () => {
   const preferredLanguage = navigator.language.split('-')[0];
   const [sourceLang, setSourceLang] = useState()
   const [targetLang, setTargetLang] = useState(preferredLanguage);
-
+  const [text, setText] = useState('');
   useEffect(() => {
-    // dectLang()
-    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-      console.log({ appMessage: request })
-      if (request.action === "detectedLanguage") {
-        setSourceLang(request.detectedLanguage)
-        sendResponse();
-        return true; // Indicates an asynchronous response is expected
-      }
-      if (request.action === "translate") {
-        sendResponse();
-
-        console.log({
-          request
-        })
-        return true;
-      }
+    chrome?.storage?.sync?.get(['detecLang'], (items) => {
+      setSourceLang(items.detecLang)
     });
   }, []);
   const translateRequest = () => {
-    chrome.runtime.sendMessage({ action: "translateRequest" }, function (response) {
-      console.log(response)
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: "translateRequest", params: {
+          sourceLang,
+          text,
+          targetLang,
+        }
+      }, response => {
+        console.log(response.farewell);
+      });
     });
   }
   return (
@@ -70,6 +60,8 @@ const App = () => {
       </div>
       <Textarea
         label="补充描述"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         placeholder="输入一些其他信息，便于更精确的术语翻译，比如'这是一篇经济学的论文'"
       />
       <Button isDisabled={!(sourceLang && targetLang && targetLang !== sourceLang)} radius="full"
@@ -77,6 +69,13 @@ const App = () => {
         className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
         翻译
       </Button>
+      <div>
+        <Button isIconOnly size='sm' onClick={() => {
+          chrome.tabs.create({ url: 'setting.html' })
+        }}>
+          <SetIcon className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };

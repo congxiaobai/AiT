@@ -7,6 +7,13 @@ export default defineConfig({
   html: {
     template: './public/index.html',
   },
+  source: {
+    entry: {
+      index: './src/index.jsx',
+      setting: './src/setting/index.jsx',
+    },
+  },
+
   output: {
     filenameHash: false,
     legalComments: 'none',
@@ -17,8 +24,9 @@ export default defineConfig({
       js: 'source-map',
     },
     copy: [{ from: './manifest.json', to: 'manifest.json' },
-  
-    { from: './src/content.js', to: 'content.js' }
-  ]
+
+    { from: './src/content.js', to: 'content.js' },
+    { from: './src/background.js', to: 'background.js' }
+    ]
   },
 });
