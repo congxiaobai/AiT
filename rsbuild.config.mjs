@@ -11,7 +11,8 @@ export default defineConfig({
     entry: {
       index: './src/index.jsx',
       setting: './src/setting/index.jsx',
-    },
+      background:'./src/background.jsx'
+    }  
   },
 
   output: {
@@ -26,7 +27,6 @@ export default defineConfig({
     copy: [{ from: './manifest.json', to: 'manifest.json' },
 
     { from: './src/content.js', to: 'content.js' },
-    { from: './src/background.js', to: 'background.js' }
     ]
   },
 });
