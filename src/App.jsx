@@ -33,7 +33,7 @@ const App = () => {
           targetLang,
         }
       }, response => {
-        console.log(response.farewell);
+        console.log(response);
       });
     });
   }

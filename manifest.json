@@ -7,7 +7,9 @@
     "<all_urls>",
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
   ],
   "options_page": "setting.html",
   "content_scripts": [
@@ -28,7 +30,9 @@
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "16": "logo.png"
+      "16": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
     }
   },
   "web_accessible_resources": [

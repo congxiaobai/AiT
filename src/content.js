@@ -15,11 +15,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'translateRequest') {
                 gatherTextNodes(document.body).then(allTextNodes => {
                         console.log("Making " + allTextNodes.length / batchSize + " total requests");
-                        translateInBatches(allTextNodes, batchSize);
+                        translateInBatches(allTextNodes, batchSize,sendResponse);
                 });
               
+        }else{
+                sendResponse({ farewell: 'Goodbye' });
+
         }
-        sendResponse({ farewell: 'Goodbye' });
         // 发送响应消息
         return true;
 
@@ -87,19 +89,23 @@ async function gatherTextNodes(element) {
         return allTextNodes;
 }
 
-function translateInBatches(textNodes, batchSize) {
+function translateInBatches(textNodes, batchSize,callBack) {
         for (let i = 0; i < textNodes.length; i += batchSize) {
+                if(i>1){
+                        return 
+                }
                 const batch = textNodes.slice(i, i + batchSize);
                 const textArray = batch.map(node => node.textContent?.trim());
 
                 chrome.runtime.sendMessage({ action: "translate", text: textArray }, function (response) {
-                        if (response.translatedText && Array.isArray(response.translatedText) && response.translatedText.length === batch.length) {
-                                batch.forEach((node, index) => {
-                                        if (document.contains(node.parentElement)) {
-                                                node.textContent = response.translatedText[index];
-                                        }
-                                });
-                        }
+                        callBack(response)
+                        // if (response.translatedText && Array.isArray(response.translatedText) && response.translatedText.length === batch.length) {
+                        //         batch.forEach((node, index) => {
+                        //                 if (document.contains(node.parentElement)) {
+                        //                         node.textContent = response.translatedText[index];
+                        //                 }
+                        //         });
+                        // }
                 });
         }
 }
