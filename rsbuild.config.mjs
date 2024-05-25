@@ -10,16 +10,12 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
     entry: {
-      index: './src/index.jsx',
-      setting: './src/setting/index.jsx',
-      background: './src/background.js',
+      index: './src/down.js'
     },
   },
   html: {
     inject: 'body',
-    template({ entryName }) {
-      return templates[entryName]
-    }
+    template:'./src/down.html'
   },
   performance: {
     chunkSplit: {

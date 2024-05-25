@@ -108,14 +108,8 @@ export class TTSRecorder {
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content": "中国第一个皇帝是谁？"
-                    }, {
-                        "role": "assistant", "content": "秦始皇"
-                    }, {
-                        "role": "user", "content": "秦始皇修的长城吗"
-                    }, {
-                        "role": "assistant", "content": "是的"
-                    }, {
+                        "role": "user", "content": "我将提问很多问题，在我输入'#end'之前，请不要断开websokcet连接。中国第一个皇帝是谁？"
+                    },{
                         "role": "user", "content": '秦始皇死于哪一年'
                     }]
                 }
