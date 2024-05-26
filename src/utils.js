@@ -29,10 +29,6 @@ export function getWebsocketUrl() {
         var apiKey = API_KEY
         var apiSecret = API_SECRET
         var url = 'wss://' + httpUrl.host + httpUrl.pathname
-
-        // console.log("我打印的" + httpUrl.host)
-        // console.log("我打印的" + httpUrl.pathname)
-
         var host = location.host
         var date = new Date().toGMTString()
         var algorithm = 'hmac-sha256'
@@ -67,14 +63,6 @@ export class TTSRecorder {
         this.setStatus('ttsing')
         return getWebsocketUrl().then(url => {
             let ttsWS  = new WebSocket(url)
-            // if ('WebSocket' in window) {
-            //     
-            // } else if ('MozWebSocket' in window) {
-            //     ttsWS = new MozWebSocket(url)
-            // } else {
-            //     alert('浏览器不支持WebSocket')
-            //     return
-            // }
             this.ttsWS = ttsWS
             ttsWS.onopen = e => {
                 this.webSocketSend()
@@ -133,7 +121,7 @@ export class TTSRecorder {
     // websocket接收数据的处理
     result(resultData) {
         let jsonData = JSON.parse(resultData)
-        // total_res = total_res + resultData
+  
         
         console.log(resultData)
         // 提问失败

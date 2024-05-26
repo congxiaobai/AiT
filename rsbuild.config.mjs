@@ -9,17 +9,23 @@ const templates = {
 export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
-    entry: {
-      index: './src/index.jsx',
-      setting: './src/setting/index.jsx',
-      background: './src/background.js',
+    entry({ target }) {
+      if (target === 'web') {
+        return {
+          index: './src/index.jsx',
+          setting: './src/setting/index.jsx',
+        };
+      }
+      if (target === 'node') {
+        return {
+          background: './src/background.js',
+        };
+      }
     },
   },
-  html: {
-    inject: 'body',
-    template({ entryName }) {
-      return templates[entryName]
-    }
+  tools: {
+    htmlPlugin: false,
+
   },
   performance: {
     chunkSplit: {
@@ -30,11 +36,12 @@ export default defineConfig({
     filenameHash: false,
     legalComments: 'none',
     distPath: {
-      js: './', css: './'
+      js: './', css: './', server: './',
     },
     sourceMap: {
       js: 'source-map',
     },
+    targets: ['web', 'node'],
     copy: [{ from: './manifest.json', to: 'manifest.json' },
 
     { from: './src/content.js', to: 'content.js' },

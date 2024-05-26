@@ -3,11 +3,11 @@ const preferredLanguage = navigator.language.split('-')[0];
 let detectedLanguage = '';
 
 if (document.readyState !== 'loading') {
-        setTimeout(() => startTranslation());  // specify batch size
+        setTimeout(() => detecLang());  
 } else {
         document.addEventListener('DOMContentLoaded', function () {
 
-                setTimeout(() => startTranslation());  // specify batch size
+                setTimeout(() => detecLang());  
         });
 }
 
@@ -15,19 +15,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'translateRequest') {
                 gatherTextNodes(document.body).then(allTextNodes => {
                         console.log("Making " + allTextNodes.length / batchSize + " total requests");
-                        translateInBatches(allTextNodes, batchSize,sendResponse);
+                        translateInBatches(allTextNodes, batchSize, sendResponse);
                 });
-              
-        }else{
-                sendResponse({ farewell: 'Goodbye' });
 
+        } else {
+                sendResponse({ farewell: 'Goodbye' });
         }
         // 发送响应消息
         return true;
 
 });
 
-async function startTranslation() {
+async function detecLang() {
         const sampleText = document.body.innerText;
         detectedLanguage = await getLang(sampleText);
         if (!detectedLanguage) {
@@ -89,25 +88,10 @@ async function gatherTextNodes(element) {
         return allTextNodes;
 }
 
-function translateInBatches(textNodes, batchSize,callBack) {
-        for (let i = 0; i < textNodes.length; i += batchSize) {
-                if(i>1){
-                        return 
-                }
-                const batch = textNodes.slice(i, i + batchSize);
-                const textArray = batch.map(node => node.textContent?.trim());
-
-                chrome.runtime.sendMessage({ action: "translate", text: textArray }, function (response) {
-                        callBack(response)
-                        // if (response.translatedText && Array.isArray(response.translatedText) && response.translatedText.length === batch.length) {
-                        //         batch.forEach((node, index) => {
-                        //                 if (document.contains(node.parentElement)) {
-                        //                         node.textContent = response.translatedText[index];
-                        //                 }
-                        //         });
-                        // }
-                });
-        }
+function translateInBatches(textNodes, batchSize, callBack) {
+        chrome.runtime.sendMessage({ action: "translate", text: textArray }, function (response) {
+                callBack(response)
+        });
 }
 
 
