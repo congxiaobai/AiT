@@ -55,8 +55,8 @@ function getWebsocketUrl() {
 
 class TTSRecorder {
     constructor({
-                    appId = APPID
-                } = {}) {
+        appId = APPID
+    } = {}) {
         this.appId = appId
         this.status = 'init'
     }
@@ -102,7 +102,8 @@ class TTSRecorder {
 
     // websocket发送数据
     webSocketSend() {
-        console.log(modelDomain)
+        const input_text = document.getElementById('input_text');
+     
         var params = {
             "header": {
                 "app_id": this.appId, "uid": "fd3f47e4-d"
@@ -121,12 +122,11 @@ class TTSRecorder {
                     }, {
                         "role": "assistant", "content": "是的"
                     }, {
-                        "role": "user", "content": $('#input_text').text()
+                        "role": "user", "content":input_text.value
                     }]
                 }
             }
         }
-        console.log(JSON.stringify(params))
         this.ttsWS.send(JSON.stringify(params))
     }
 
@@ -138,9 +138,16 @@ class TTSRecorder {
     // websocket接收数据的处理
     result(resultData) {
         let jsonData = JSON.parse(resultData)
-        total_res = total_res + resultData
-        $('#output_text').val(total_res)
-        // console.log(resultData)
+        if(jsonData?.payload?.choices?.text[0]){
+            total_res = total_res + jsonData?.payload?.choices?.text[0]?.content
+
+        }
+
+        const output_text = document.getElementById('output_text');
+        if(output_text){
+            output_text.value = total_res;
+        }
+         console.log(resultData)
         // 提问失败
         if (jsonData.header.code !== 0) {
             alert(`提问失败: ${jsonData.header.code}:${jsonData.header.message}`)
@@ -156,25 +163,37 @@ class TTSRecorder {
 
 // ======================开始调用=============================
 let bigModel = new TTSRecorder()
+
+
+
 bigModel.onWillStatusChange = function (oldStatus, status) {
     // 可以在这里进行页面中一些交互逻辑处理：按钮交互等
     // 按钮中的文字
     let btnState = {
         init: '立即提问', ttsing: '回答中...'
     }
-    $('.audio-ctrl-btn')
-        .removeClass(oldStatus)
-        .addClass(status)
-        .text(btnState[status])
+    const audioCtrlBtn = document.querySelector('.audio-ctrl-btn');
+    if (audioCtrlBtn) {
+        audioCtrlBtn.classList.remove(oldStatus);
+        audioCtrlBtn.classList.add(status);
+        audioCtrlBtn.textContent = btnState[status];
+    }
+
+
+}
+const audioCtrlBtn = document.querySelector('.audio-ctrl-btn');
+if (audioCtrlBtn) {
+    audioCtrlBtn.addEventListener('click', function () {
+        if (['init', 'endPlay', 'errorTTS'].indexOf(bigModel.status) > -1) {
+            bigModel.start();
+        }
+    });
 }
 
-$('.audio-ctrl-btn').click(function () {
-    if (['init', 'endPlay', 'errorTTS'].indexOf(bigModel.status) > -1) {
-        bigModel.start()
-    }
-})
-
-$("#input_text").on('input propertychange', function () {
-    $('#input_text').text(this.value)
-    // console.log($("#input_text").text())
-});
+// 使用原生的事件监听，同时修复文本设置
+const inputText = document.getElementById('input_text');
+if (inputText) {
+    inputText.addEventListener('input propertychange', function () {
+        inputText.value = this.value;
+    });
+}
