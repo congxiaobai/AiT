@@ -3,19 +3,26 @@ const preferredLanguage = navigator.language.split('-')[0];
 let detectedLanguage = '';
 
 if (document.readyState !== 'loading') {
-        setTimeout(() => detecLang());  
+        setTimeout(() => detecLang());
 } else {
         document.addEventListener('DOMContentLoaded', function () {
 
-                setTimeout(() => detecLang());  
+                setTimeout(() => detecLang());
         });
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'translateRequest') {
                 gatherTextNodes(document.body).then(allTextNodes => {
-                        console.log("Making " + allTextNodes.length / batchSize + " total requests");
-                        translateInBatches(allTextNodes, batchSize, sendResponse);
+                        chrome.runtime.sendMessage({ action: "translateContent", text: allTextNodes.map(s=>({
+                                id:s.id,
+                                text:s.text
+                        })) }, function (response) {
+                                if(response){
+
+                                }
+                                sendResponse({ sucess: true });
+                        });
                 });
 
         } else {
@@ -41,10 +48,7 @@ function watchForMutation() {
                         if (mutation.type === 'childList') {
                                 mutation.addedNodes.forEach((node) => {
                                         if (node.nodeType === Node.ELEMENT_NODE) {
-                                                gatherTextNodes(node).then(changedTextNodes => {
-                                                        console.log("Making " + changedTextNodes.length / batchSize + " total requests");
-                                                        translateInBatches(changedTextNodes, batchSize);
-                                                });
+                                                console.log({ addedNodes: node })
                                         }
                                 });
                         }
@@ -56,15 +60,12 @@ function watchForMutation() {
         });
 }
 
-function translateDocument(batchSize) {
-        console.log("Harvesting text");
-        gatherTextNodes(document.body).then(allTextNodes => {
-                console.log("Making " + allTextNodes.length / batchSize + " total requests");
-                translateInBatches(allTextNodes, batchSize);
+function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
         });
-        watchForMutation();
 }
-
 /**
  * 递归地收集给定元素内所有非首选语言的文本节点。
  * 
@@ -76,10 +77,11 @@ async function gatherTextNodes(element) {
         const childNodes = Array.from(element.childNodes);
         for (let node of childNodes) {
                 if (node.nodeType === Node.TEXT_NODE && node.textContent && node.textContent.trim().length > 0) {
-                        const detectedLanguage = await getLang(node.textContent);
-                        if (detectedLanguage !== preferredLanguage) {
-                                allTextNodes.push(node);
-                        }
+                        allTextNodes.push({
+                                id: generateUUID(),
+                                text: node.textContent.trim(),
+                                node: node
+                        })
                 } else if (node.nodeType === Node.ELEMENT_NODE) {
                         const childTextNodes = await gatherTextNodes(node);
                         allTextNodes.push(...childTextNodes);
@@ -88,37 +90,12 @@ async function gatherTextNodes(element) {
         return allTextNodes;
 }
 
-function translateInBatches(textNodes, batchSize, callBack) {
-        chrome.runtime.sendMessage({ action: "translate", text: textArray }, function (response) {
-                callBack(response)
-        });
-}
 
 
 async function getLang(text) {
         const langResult = await chrome.i18n.detectLanguage(text);
         return langResult.languages[0]?.language ?? "";
 }
-
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-        if (request.action === 'getDetectedLanguage') {
-                sendResponse({ detectedLanguage: detectedLanguage });
-        } else if (request.action === 'startTranslation') {
-                const alwaysTranslate = request.alwaysTranslate;
-                if (alwaysTranslate) {
-                        chrome.storage.sync.get('alwaysTranslateLanguages', function (data) {
-                                const alwaysTranslateLanguages = data.alwaysTranslateLanguages || [];
-                                if (!alwaysTranslateLanguages.includes(detectedLanguage)) {
-                                        alwaysTranslateLanguages.push(detectedLanguage);
-                                        chrome.storage.sync.set({ alwaysTranslateLanguages: alwaysTranslateLanguages });
-                                }
-                        });
-                }
-                translateDocument(batchSize);
-        }
-});
-
 
 
 

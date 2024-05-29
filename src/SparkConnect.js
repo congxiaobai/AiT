@@ -48,13 +48,12 @@ export class TTSRecorder {
         appId = APPID
     } = {}) {
         this.appId = appId
-       
-        this.setStatus('init')
+        this.textArray = [];
+        this.setStatus('ready')
     }
 
     // 修改状态
     setStatus(status) {
-        this.onWillStatusChange && this.onWillStatusChange(this.status, status)
         this.status = status
     }
 
@@ -62,7 +61,7 @@ export class TTSRecorder {
     connectWebSocket() {
         this.setStatus('ttsing')
         return getWebsocketUrl().then(url => {
-            let ttsWS  = new WebSocket(url)
+            let ttsWS = new WebSocket(url)
             this.ttsWS = ttsWS
             ttsWS.onopen = e => {
                 this.webSocketSend()
@@ -73,11 +72,12 @@ export class TTSRecorder {
             ttsWS.onerror = e => {
                 clearTimeout(this.playTimeout)
                 this.setStatus('error')
-                alert('WebSocket报错，请f12查看详情')
+             
                 console.error(`详情查看：${encodeURI(url.replace('wss:', 'https:'))}`)
             }
             ttsWS.onclose = e => {
-                console.log(e)
+                this.ttsWS =null;
+                this.setStatus('ready')
             }
         })
     }
@@ -85,26 +85,18 @@ export class TTSRecorder {
 
     // websocket发送数据
     webSocketSend() {
-        console.log(modelDomain)
+        console.log(this.textArray)
         var params = {
             "header": {
                 "app_id": this.appId, "uid": "fd3f47e4-d"
             }, "parameter": {
                 "chat": {
-                    "domain": modelDomain, "temperature": 0.5, "max_tokens": 1024
+                    "domain": modelDomain, "temperature": 0.5, "max_tokens": 8191
                 }
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content": "中国第一个皇帝是谁？"
-                    }, {
-                        "role": "assistant", "content": "秦始皇"
-                    }, {
-                        "role": "user", "content": "秦始皇修的长城吗"
-                    }, {
-                        "role": "assistant", "content": "是的"
-                    }, {
-                        "role": "user", "content": '秦始皇死于哪一年'
+                        "role": "user", "content": "请将这个数组中的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整，翻译的时候，请前后结合起来翻译。" + JSON.stringify(this.textArray)
                     }]
                 }
             }
@@ -114,25 +106,22 @@ export class TTSRecorder {
     }
 
     start() {
-       
         this.connectWebSocket()
     }
 
     // websocket接收数据的处理
     result(resultData) {
         let jsonData = JSON.parse(resultData)
-  
-        
+
         console.log(resultData)
         // 提问失败
         if (jsonData.header.code !== 0) {
-            alert(`提问失败: ${jsonData.header.code}:${jsonData.header.message}`)
             console.error(`${jsonData.header.code}:${jsonData.header.message}`)
             return
         }
         if (jsonData.header.code === 0 && jsonData.header.status === 2) {
+            this.onResult&&this.onResult(resultData)
             this.ttsWS.close()
-         
         }
     }
 }
