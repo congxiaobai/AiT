@@ -96,7 +96,7 @@ export class TTSRecorder {
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content": "请将这个数组中的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整，翻译的时候，请前后结合起来翻译。" + JSON.stringify(this.textArray)
+                        "role": "user", "content": "下面是一个数组,包含了id和text两个字段。请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。" + JSON.stringify(this.textArray)
                     }]
                 }
             }
