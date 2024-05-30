@@ -72,11 +72,11 @@ export class TTSRecorder {
             ttsWS.onerror = e => {
                 clearTimeout(this.playTimeout)
                 this.setStatus('error')
-             
+
                 console.error(`详情查看：${encodeURI(url.replace('wss:', 'https:'))}`)
             }
             ttsWS.onclose = e => {
-                this.ttsWS =null;
+                this.ttsWS = null;
                 this.setStatus('ready')
             }
         })
@@ -85,7 +85,8 @@ export class TTSRecorder {
 
     // websocket发送数据
     webSocketSend() {
-        console.log(this.textArray)
+        console.log(this.textArray);
+        this.total_res = ''
         var params = {
             "header": {
                 "app_id": this.appId, "uid": "fd3f47e4-d"
@@ -101,7 +102,6 @@ export class TTSRecorder {
                 }
             }
         }
-        console.log(JSON.stringify(params))
         this.ttsWS.send(JSON.stringify(params))
     }
 
@@ -111,8 +111,10 @@ export class TTSRecorder {
 
     // websocket接收数据的处理
     result(resultData) {
-        let jsonData = JSON.parse(resultData)
-
+        let jsonData = JSON.parse(resultData);
+        if (jsonData?.payload?.choices?.text[0]?.content) {
+            this.total_res += jsonData?.payload?.choices?.text[0]?.content
+        }
         console.log(resultData)
         // 提问失败
         if (jsonData.header.code !== 0) {
@@ -120,7 +122,19 @@ export class TTSRecorder {
             return
         }
         if (jsonData.header.code === 0 && jsonData.header.status === 2) {
-            this.onResult&&this.onResult(resultData)
+            const replacedString = this.total_res
+
+            // 正则表达式匹配 []
+            const matchResult = replacedString.match(/\[(.*?)\]/);
+
+            if (matchResult && matchResult.length > 1) {
+                const contentInsideBrackets = matchResult[1];
+                this.onResult && this.onResult(JSON.parse(`[${contentInsideBrackets}]`))
+
+                console.log(contentInsideBrackets); // 输出: "{id:1}"
+            } else {
+                console.log("没有找到匹配的内容");
+            }
             this.ttsWS.close()
         }
     }

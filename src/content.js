@@ -11,6 +11,16 @@ if (document.readyState !== 'loading') {
         });
 }
 
+function findParentNode(node) {
+        if (node.appendChild && node.nodeType === Node.ELEMENT_NODE) {
+                return node
+        }
+        if (!node.parentNode) {
+                return null
+        }
+        return findParentNode(node.parentNode)
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'translateRequest') {
                 gatherTextNodes(document.body).then(allTextNodes => {
@@ -20,7 +30,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                                         text: s.text
                                 }))
                         }, function (response) {
-                                if (response) {
+                                if (response && Array.isArray(response)) {
+                                        response.forEach(({ id, text }) => {
+                                                const node = allTextNodes.find(n => n.id === id);
+
+                                                if (node && node.node) {
+                                                        const newNode = node.node.cloneNode(true);
+                                                        newNode.textContent = text;
+                                                        if (node.node.append) {
+                                                                node.node.append(newNode)
+                                                        }
+                                                        let parentNode = findParentNode(node.node);
+                                                        if (parentNode) {
+                                                                parentNode.appendChild(newNode)
+                                                        }
+
+                                                }
+                                        });
 
                                 }
                                 sendResponse({ sucess: true });
