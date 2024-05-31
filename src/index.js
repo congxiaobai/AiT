@@ -49,7 +49,8 @@ if (audioCtrlBtn) {
            
             allTextNodes.forEach(node=>{
                 const newNode = node.node.cloneNode(true);
-            
+                newNode.textContent=''
+                newNode.classList.add('loading')
                 insertAfter(newNode, node.node);
 
             })
