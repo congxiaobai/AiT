@@ -38,7 +38,7 @@ const refreshTrans = debounce(() => {
                         node._$translate = 'doing';
                         const newNode = node.cloneNode(true);
                         newNode.textContent = '';
-                        newNode.classList.add('loading')
+                        newNode.classList.add('translate_loading')
                         newNode.style.opacity = 0.6;
                         insertAfter(newNode, node)
                         loadingNode.push(newNode)

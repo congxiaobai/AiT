@@ -21,7 +21,8 @@
       ],
       "js": [
         "content.js"
-      ]
+      ],
+      "css": ["content.css"]
     }
   ],
   "background": {

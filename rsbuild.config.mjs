@@ -35,6 +35,7 @@ export default defineConfig({
     },
     targets: ['web'],
     copy: [{ from: './manifest.json', to: 'manifest.json' },
+    { from: './src/content.css', to: 'content.css' },
     ]
   },
 });
