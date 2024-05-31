@@ -6,4 +6,24 @@ body {
     width: 300px;
     padding: 10px;
     background-color: black;
+
+    .loading {
+        width: 30px;
+        height: 30px;
+        border: 2px solid #000;
+        border-top-color: transparent;
+        border-radius: 100%;
+
+        animation: circle infinite 0.75s linear;
+    }
+
+    @keyframes circle {
+        0% {
+            transform: rotate(0);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }

@@ -13,6 +13,7 @@ export default defineConfig({
         index: './src/index.jsx',
         setting: './src/setting/index.jsx',
         background: './src/background.js',
+        content: './src/content.js',
       }
   },
   html: {
@@ -34,8 +35,6 @@ export default defineConfig({
     },
     targets: ['web'],
     copy: [{ from: './manifest.json', to: 'manifest.json' },
-
-    { from: './src/content.js', to: 'content.js' },
     ]
   },
 });

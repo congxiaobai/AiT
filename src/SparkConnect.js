@@ -48,8 +48,6 @@ export class TTSRecorder {
         appId = APPID
     } = {}) {
         this.appId = appId
-        this.textArray = [];
-        this.setStatus('ready')
     }
 
     // 修改状态
@@ -64,7 +62,8 @@ export class TTSRecorder {
             let ttsWS = new WebSocket(url)
             this.ttsWS = ttsWS
             ttsWS.onopen = e => {
-                this.webSocketSend()
+                this.setStatus('ready')
+                this.onOpen && this.onOpen(e)
             }
             ttsWS.onmessage = e => {
                 this.result(e.data)
@@ -77,16 +76,15 @@ export class TTSRecorder {
             }
             ttsWS.onclose = e => {
                 this.ttsWS = null;
-                this.setStatus('ready')
+                this.setStatus('notReady')
             }
         })
     }
 
 
     // websocket发送数据
-    webSocketSend() {
-        console.log(this.textArray);
-        this.total_res = ''
+    webSocketSend(items) {
+        this.total_res = []
         var params = {
             "header": {
                 "app_id": this.appId, "uid": "fd3f47e4-d"
@@ -97,7 +95,7 @@ export class TTSRecorder {
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content": "下面是一个数组,包含了id和text两个字段。请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。" + JSON.stringify(this.textArray)
+                        "role": "user", "content": "下面是一个数组,包含了id和text两个字段。请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。" + JSON.stringify(items)
                     }]
                 }
             }
@@ -113,29 +111,33 @@ export class TTSRecorder {
     result(resultData) {
         let jsonData = JSON.parse(resultData);
         if (jsonData?.payload?.choices?.text[0]?.content) {
-            this.total_res += jsonData?.payload?.choices?.text[0]?.content
+            let tmp = jsonData?.payload?.choices?.text[0]?.content;
+            console.log({ tmp, total_res: this.total_res })
+            for (let i = 0; i < tmp.length; i++) {
+                if (tmp[i] === '{' && this.total_res.length === 0) {
+                    this.total_res.push('{')
+                    continue;
+                }
+                if (this.total_res[0] === '{'&& tmp[i] !== '}') {
+                    this.total_res.push(tmp[i]);
+                    continue;
+                }
+                if (tmp[i] === '}') {
+                    this.total_res.push('}')
+                    console.log('匹配到:', this.total_res.join(''))
+                    this.onResult && this.onResult(this.total_res.join(''));
+                    this.total_res = [];
+                    continue;
+                }
+            }
         }
-        console.log(resultData)
         // 提问失败
         if (jsonData.header.code !== 0) {
             console.error(`${jsonData.header.code}:${jsonData.header.message}`)
             return
         }
         if (jsonData.header.code === 0 && jsonData.header.status === 2) {
-            const replacedString = this.total_res
-
-            // 正则表达式匹配 []
-            const matchResult = replacedString.match(/\[(.*?)\]/);
-
-            if (matchResult && matchResult.length > 1) {
-                const contentInsideBrackets = matchResult[1];
-                this.onResult && this.onResult(JSON.parse(`[${contentInsideBrackets}]`))
-
-                console.log(contentInsideBrackets); // 输出: "{id:1}"
-            } else {
-                console.log("没有找到匹配的内容");
-            }
-            this.ttsWS.close()
+            this.onEnd && this.onEnd()
         }
     }
 }
