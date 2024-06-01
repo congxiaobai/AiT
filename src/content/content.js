@@ -50,7 +50,7 @@ const refreshTrans = debounce(() => {
                         }
                 })
         }, () => {
-                console.log('请求成功')
+               
         })
 }, 200)
 
@@ -94,6 +94,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
 
                 const { id, text } = message.payload;
+                console.log('收到翻译文本', text)
+
                 const node = allTextNodes.find(n => n._$id === id);
                 if (node) {
                         node._$translate = 'done';
@@ -105,8 +107,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         observer.unobserve(node);
                 }
                 const inNode = loadingNode.find(n => n._$id === id);
-                console.log('翻译文本', text)
-
+                
                 if (inNode) {
                         inNode.remove()
                 }

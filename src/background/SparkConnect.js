@@ -37,6 +37,10 @@ export class TTSRecorder {
         this.status = status
     }
 
+    //s
+    setActiveTabID(activeTabId){
+        this.activeTabId = activeTabId
+    }
     // 连接websocket
     connectWebSocket() {
         this.setStatus('ttsing')
@@ -96,7 +100,6 @@ export class TTSRecorder {
         let jsonData = JSON.parse(resultData);
         if (jsonData?.payload?.choices?.text[0]?.content) {
             let tmp = jsonData?.payload?.choices?.text[0]?.content;
-            console.log('Socket:', tmp)
             for (let i = 0; i < tmp.length; i++) {
                 if (tmp[i] === '{' && this.total_res.length === 0) {
                     this.total_res.push('{')
@@ -108,7 +111,6 @@ export class TTSRecorder {
                 }
                 if (tmp[i] === '}' && this.total_res[0] === '{') {
                     this.total_res.push('}')
-                    console.log('匹配到:', this.total_res.join(''))
                     this.onResult && this.onResult(this.total_res.join(''));
                     this.total_res = [];
                     continue;

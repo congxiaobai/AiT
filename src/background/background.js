@@ -45,25 +45,24 @@ async function translateText(textArray, sparkConfig, promtText) {
         }
         try {
                 let WebConnect = new TTSRecorder(sparkConfig);
+                let allRes = []
                 WebConnect.onEnd = () => {
                         WebConnect.setStatus('close')
                 }
-                WebConnect.onResult = (res) => {
-                        console.log({ res })
-                        res && setTimeout(() => {
-                                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                                        let payload = JSON.parse(res)
-                                        if (!tabs[0]) {
-                                                console.log('没有激活的tab,准备重试', tabs)
-                                                retry(4, payload);
-                                                return
-                                        }
 
-                                        chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: payload }, () => {
-                                                console.log('翻译成功23', JSON.parse(res))
+                WebConnect.onResult = (res) => {
+                        try {
+                                let payload = JSON.parse(res)
+                                console.log('翻译成功23', JSON.parse(res));
+                                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                                        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: payload }, () => {
+
                                         });
-                                });
-                        }, 100)
+                                })
+                        } catch  {
+
+                        }
+
                 }
                 WebConnect.onOpen = () => {
                         if (textArray.length > 0) {
