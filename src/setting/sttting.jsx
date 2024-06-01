@@ -31,10 +31,11 @@ export default function App() {
                                         2. <Link href="https://console.xfyun.cn/app/myapp" isExternal={true}>点击这里</Link>进入控制台，并创建新应用</div>
                                     <div className="text-md text-default-500 p-1" >
                                         3. 进入应用，在左侧菜单里选择 'Spark3.5 Max'</div>
-                                        <div className="text-md text-default-500 p-1" >
+                                    <div className="text-md text-default-500 p-1" >
                                         4. 选中后，在主面板点击立即购买，可以免费领取个人账户200万tooken用量</div>
-
+                                    <p>联系作者:congxiaobai1233@gmail.com</p>
                                 </div>
+
                             </CardFooter>
 
                         </Card>
