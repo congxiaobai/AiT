@@ -17,44 +17,58 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         sendResponse()
 });
 
+function retry(count, payload) {
+        if (count > 0) {
+                setTimeout(() => {
+                        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                                console.log('重试次数', count)
+                                if (!tabs[0]) {
+
+                                        retry(count - 1, payload);
+                                        return
+                                }
+                                chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: payload }, () => {
+                                        console.log('翻译成功23', JSON.parse(res))
+                                });
+                        })
+                }, 100)
+
+        }
+
+}
 async function translateText(textArray) {
         if (!textArray || textArray.length === 0) {
                 return
         }
         try {
-                if (!WebConnect || !WebConnect.ttsWS) {
-                        WebConnect = new TTSRecorder();
-                        WebConnect.onEnd = () => {
-                                if (paddingText.length > 0) {
-                                        WebConnect.webSocketSend(paddingText);
-                                        paddingText = []
-                                } else {
-                                        WebConnect.setStatus('ready')
-                                }
-                        }
-                        WebConnect.onResult = (res) => {
-                                console.log({ res })
-                                res && chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                                        chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: JSON.parse(res) },() => {
+
+                let WebConnect = new TTSRecorder();
+                WebConnect.onEnd = () => {
+                  WebConnect.setStatus('close')
+                }
+                WebConnect.onResult = (res) => {
+                        console.log({ res })
+                        res && setTimeout(() => {
+                                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                                        let payload = JSON.parse(res)
+                                        if (!tabs[0]) {
+                                                console.log('没有激活的tab,准备重试', tabs)
+                                                retry(4, payload);
+                                                return
+                                        }
+
+                                        chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: payload }, () => {
                                                 console.log('翻译成功23', JSON.parse(res))
                                         });
                                 });
-                               
-                        }
-                        WebConnect.onOpen = () => {
-                                if (textArray.length > 0) {
-                                        WebConnect.webSocketSend(textArray);
-                                }
-                        }
-                        WebConnect.start()
-                } else {
-                        if (WebConnect.status === 'ready') {
-                                WebConnect.webSocketSend(textArray)
-                        } else {
-                                paddingText = paddingText.concat(textArray)
+                        }, 100)
+                }
+                WebConnect.onOpen = () => {
+                        if (textArray.length > 0) {
+                          WebConnect.webSocketSend(textArray);
                         }
                 }
-
+                WebConnect.start()
 
 
         } catch (error) {

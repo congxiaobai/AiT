@@ -112,17 +112,17 @@ export class TTSRecorder {
         let jsonData = JSON.parse(resultData);
         if (jsonData?.payload?.choices?.text[0]?.content) {
             let tmp = jsonData?.payload?.choices?.text[0]?.content;
-            console.log({ tmp, total_res: this.total_res })
+            console.log('Socket:',tmp)
             for (let i = 0; i < tmp.length; i++) {
                 if (tmp[i] === '{' && this.total_res.length === 0) {
                     this.total_res.push('{')
                     continue;
                 }
-                if (this.total_res[0] === '{'&& tmp[i] !== '}') {
+                if (this.total_res[0] === '{' && tmp[i] !== '}') {
                     this.total_res.push(tmp[i]);
                     continue;
                 }
-                if (tmp[i] === '}') {
+                if (tmp[i] === '}' && this.total_res[0] === '{') {
                     this.total_res.push('}')
                     console.log('匹配到:', this.total_res.join(''))
                     this.onResult && this.onResult(this.total_res.join(''));
@@ -137,6 +137,7 @@ export class TTSRecorder {
             return
         }
         if (jsonData.header.code === 0 && jsonData.header.status === 2) {
+            this.ttsWS.close()
             this.onEnd && this.onEnd()
         }
     }
