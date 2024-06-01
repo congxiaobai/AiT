@@ -5,10 +5,11 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
     entry: {
-        index: './src/setting/index.jsx',
-      }
+      index: './src/popup/index.jsx',
+    }
   },
   html: {
     template: './public/index.html',
-  }
+  },
+ 
 });

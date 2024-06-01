@@ -3,8 +3,8 @@ import { Button } from '@nextui-org/react';
 import { Select, SelectItem } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
 
-import Logo from '../public/arrow.svg?react'
-import SetIcon from '../public/setting.svg?react'
+import Logo from '../../public/arrow.svg?react'
+import SetIcon from '../../public/setting.svg?react'
 import { useEffect, useState } from 'react';
 const source = [
   { label: "英文", value: "en" },

@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
     entry: {
-        index: './src/index.jsx',
+        index: './src/popup/index.jsx',
         setting: './src/setting/index.jsx',
-        background: './src/background.js',
-        content: './src/content.js',
+        background: './src/background/background.js',
+        content: './src/content/content.js',
       }
   },
   html: {
@@ -30,7 +30,7 @@ export default defineConfig({
     },
     targets: ['web'],
     copy: [{ from: './manifest.json', to: 'manifest.json' },
-    { from: './src/content.css', to: 'content.css' },
+    { from: './src/content/content.css', to: 'content.css' },
     ]
   },
 });

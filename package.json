@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev:st": "rsbuild dev --open --config rsbuild.setting.config.mjs",
+    "dev:pop": "rsbuild dev --open --config rsbuild.popup.config.mjs",
     "build": "rsbuild build",
     "preview": "rsbuild preview"
   },
