@@ -5,10 +5,7 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
     entry: {
-        index: './src/index.jsx',
-        setting: './src/setting/index.jsx',
-        background: './src/background.js',
-        content: './src/content.js',
+        index: './src/setting/index.jsx',
       }
   },
   html: {

@@ -62,7 +62,7 @@ const App = () => {
         label="补充描述"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="输入一些其他信息，便于更精确的术语翻译，比如'这是一篇经济学的论文'"
+        placeholder="输入一些其他信息，便于更精确的术语翻译，比如'这是一篇经济学的论文'。限制100个字"
       />
       <Button isDisabled={!(sourceLang && targetLang && targetLang !== sourceLang)} radius="full"
         onClick={translateRequest}
@@ -71,7 +71,9 @@ const App = () => {
       </Button>
       <div>
         <Button isIconOnly size='sm' onClick={() => {
-          chrome.tabs.create({ url: 'setting.html' })
+          chrome.runtime.openOptionsPage(function() {
+            console.log('Options page opened.');
+          });
         }}>
           <SetIcon className="w-4 h-4" />
         </Button>

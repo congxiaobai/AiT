@@ -3,12 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "rsbuild dev --open",
+    "dev:st": "rsbuild dev --open --config rsbuild.setting.config.mjs",
     "build": "rsbuild build",
     "preview": "rsbuild preview"
   },
   "dependencies": {
-    "@nextui-org/react": "^2.3.6",
+    "@nextui-org/react": "^2.4.0",
     "crypto-js": "^4.2.0",
     "loadsh": "^0.0.4",
     "lodash": "^4.17.21",
