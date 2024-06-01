@@ -8,6 +8,8 @@ module.exports = {
     './src/**/*.{html,js,ts,jsx,tsx}', 
     './public/**/*.{html}', 
      "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+     "./node_modules/tw-noti/**/*.{js,ts,jsx,tsx}",
+     
 ],
   theme: {
     extend: {},

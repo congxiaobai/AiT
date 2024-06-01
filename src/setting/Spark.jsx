@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Input, Button } from "@nextui-org/react";
-import { useToast ,ToastProvider} from 'tw-noti';
+import { useToast } from 'tw-noti';
 
 export default () => {
     const { enqueueToast } = useToast();
@@ -29,10 +29,10 @@ export default () => {
             spark_appId: value.spark_appId,
             spark_apiSecret: value.spark_apiSecret,
             spark_apiKey: value.spark_apiKey
-        },()=>{
+        }, () => {
             setLoading(false)
             if (chrome.runtime.lastError) {
-                enqueueToast({ content: '保存失败', type: 'success' })
+                enqueueToast({ content: '保存失败', type: 'error' })
             } else {
                 enqueueToast({ content: '保存成功', type: 'success' })
             }
@@ -62,11 +62,7 @@ export default () => {
 
         />
         <div>
-         <ToastProvider containerClasses='right-12 bottom-12'>
-
-            <Button  isLoading={loading} color="primary" isDisabled={!canSubmit} onClick={submit}>保存</Button>
-            </ToastProvider>
-
+            <Button isLoading={loading} color="primary" isDisabled={!canSubmit} onClick={submit}>保存</Button>
         </div>
 
     </div>

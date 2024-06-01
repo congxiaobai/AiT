@@ -4,7 +4,7 @@ let allTextNodes = [];
 let loadingNode = [];
 let inViewNodes = [];
 let appendsNodes = [];
-let promtText =''
+let promtText = ''
 import { detecLang, generateUUID, istextNode, isElementNode, insertAfter } from './util'
 
 if (document.readyState !== 'loading') {
@@ -35,7 +35,7 @@ const refreshTrans = debounce(() => {
         console.log('请求翻译的节点', peddingNode.map(s => s.textContent))
         chrome.runtime.sendMessage({
                 action: "translateContent",
-                promtText:promtText,
+                promtText: promtText,
                 text: peddingNode.map(node => {
                         node._$translate = 'doing';
                         const newNode = document.createElement('p')
@@ -50,7 +50,7 @@ const refreshTrans = debounce(() => {
                         }
                 })
         }, () => {
-               
+
         })
 }, 200)
 
@@ -60,9 +60,10 @@ function clearPreData() {
         appendsNodes.forEach(s => s.remove());
         loadingNode = [];
         appendsNodes = [];
-        allTextNodes.forEach(node => {
+        allTextNodes.forEach((node, index) => {
                 let id = generateUUID();
                 node._$id = id;
+                node._$sortIndex = index
                 node._$translate = 'todo';
                 observer.observe(node);
         })
@@ -107,7 +108,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         observer.unobserve(node);
                 }
                 const inNode = loadingNode.find(n => n._$id === id);
-                
+
                 if (inNode) {
                         inNode.remove()
                 }
