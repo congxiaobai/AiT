@@ -1,47 +1,66 @@
 import { Button } from '@nextui-org/react';
-
+import { sourceLangOptions, aiModalOptions } from '../constant'
 import { Select, SelectItem } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
-
+import debounce from 'lodash/debounce'
 import Logo from '../../public/arrow.svg?react'
 import SetIcon from '../../public/setting.svg?react'
 import { useEffect, useState } from 'react';
-const source = [
-  { label: "英文", value: "en" },
-  { label: "中文", value: "zh" },
-  { label: "日文", value: "ja" },
-  { label: "法文", value: "fr" },
-  { label: "德文", value: "de" }
-]
+
 
 const App = () => {
   const preferredLanguage = navigator.language.split('-')[0];
   const [sourceLang, setSourceLang] = useState()
+  const [aiModal, setAiModal] = useState('')
   const [targetLang, setTargetLang] = useState(preferredLanguage);
   const [text, setText] = useState('');
+  const [disabledKeys, setDisabledKeys] = useState([]);
+  const [btnLoading, setBtnLoading] = useState(false);
+  useEffect(() => {
+    aiModal && chrome?.storage?.sync.set({
+      trans_modal: aiModal
+    })
+  }, [aiModal])
   useEffect(() => {
     chrome?.storage?.sync?.get(['detecLang'], (items) => {
       setSourceLang(items.detecLang)
     });
+    let disabledKeys = []
+    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal'], (items) => {
+      if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
+        disabledKeys.push('spark')
+      } else if (items.trans_modal) {
+        setAiModal(items.trans_modal)
+      } else {
+        setAiModal('spark')
+      }
+    });
+
+    setDisabledKeys(disabledKeys)
   }, []);
-  const translateRequest = () => {
+
+  const translateRequest = debounce(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (!tabs[0]) {
+        return
+      }
       chrome.tabs.sendMessage(tabs[0].id, {
-        action: "translateRequest", params: {
+        action: "translateRequest", payload: {
           sourceLang,
-          text,
+          promtText: text,
           targetLang,
         }
       }, response => {
-        console.log(response);
+        setBtnLoading(true);
+        setTimeout(() => setBtnLoading(false), 3000)
       });
     });
-  }
+  }, 200)
   return (
     <div className=" flex flex-col gap-8  justify-center">
       <div className='flex gap-2 justify-center items-center' >
         <Select
-          items={source} size="sm"
+          items={sourceLangOptions} size="sm"
           label="源语言"
           selectedKeys={[sourceLang]}
           onChange={(e) => setSourceLang(e.target.value)}
@@ -50,7 +69,7 @@ const App = () => {
         </Select>
         <Logo className="w-6 h-12"></Logo>
         <Select
-          items={source} size="sm"
+          items={sourceLangOptions} size="sm"
           label="目标语言"
           selectedKeys={[targetLang]}
           onChange={(e) => setTargetLang(e.target.value)}
@@ -58,20 +77,29 @@ const App = () => {
           {(animal) => <SelectItem key={animal.value}>{animal.label}</SelectItem>}
         </Select>
       </div>
+      <Select
+        items={aiModalOptions} size="sm"
+        label="翻译服务"
+        disabledKeys={disabledKeys}
+        selectedKeys={[aiModal]}
+        onChange={(e) => setAiModal(e.target.value)}
+      >
+        {(animal) => <SelectItem key={animal.value}>{animal.label}</SelectItem>}
+      </Select>
       <Textarea
         label="补充描述"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => e.target.value.length < 101 && setText(e.target.value)}
         placeholder="输入一些其他信息，便于更精确的术语翻译，比如'这是一篇经济学的论文'。限制100个字"
       />
-      <Button isDisabled={!(sourceLang && targetLang && targetLang !== sourceLang)} radius="full"
+      <Button isLoading={btnLoading} isDisabled={!(sourceLang && aiModal && targetLang && targetLang !== sourceLang)} radius="full"
         onClick={translateRequest}
         className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
         翻译
       </Button>
       <div>
         <Button isIconOnly size='sm' onClick={() => {
-          chrome.runtime.openOptionsPage(function() {
+          chrome.runtime.openOptionsPage(function () {
             console.log('Options page opened.');
           });
         }}>

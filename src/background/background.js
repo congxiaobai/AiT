@@ -3,15 +3,18 @@ import { TTSRecorder } from './SparkConnect';
 
 chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
+
 });
 
-
-let WebConnect = null;
-let paddingText = []
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (request.action === "translateContent" && request.text) {
+                chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey'], (sparkConfig) => {
+                        if (sparkConfig) {
+                                translateText(request.text, sparkConfig, request.promtText)
+                        }
+                });
                 console.log('background翻译', request.text)
-                translateText(request.text)
+
                 return true; // Indicates an asynchronous response is expected
         }
         sendResponse()
@@ -36,15 +39,14 @@ function retry(count, payload) {
         }
 
 }
-async function translateText(textArray) {
+async function translateText(textArray, sparkConfig, promtText) {
         if (!textArray || textArray.length === 0) {
                 return
         }
         try {
-
-                let WebConnect = new TTSRecorder();
+                let WebConnect = new TTSRecorder(sparkConfig);
                 WebConnect.onEnd = () => {
-                  WebConnect.setStatus('close')
+                        WebConnect.setStatus('close')
                 }
                 WebConnect.onResult = (res) => {
                         console.log({ res })
@@ -65,7 +67,7 @@ async function translateText(textArray) {
                 }
                 WebConnect.onOpen = () => {
                         if (textArray.length > 0) {
-                          WebConnect.webSocketSend(textArray);
+                                WebConnect.webSocketSend(textArray, promtText);
                         }
                 }
                 WebConnect.start()

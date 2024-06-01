@@ -1,10 +1,10 @@
-const preferredLanguage = navigator.language.split('-')[0];
 import debounce from 'lodash/debounce'
 
-let detectedLanguage = '';
-const allTextNodes = [];
-const loadingNode = [];
-const inViewNodes = [];
+let allTextNodes = [];
+let loadingNode = [];
+let inViewNodes = [];
+let appendsNodes = [];
+let promtText =''
 import { detecLang, generateUUID, istextNode, isElementNode, insertAfter } from './util'
 
 if (document.readyState !== 'loading') {
@@ -34,7 +34,9 @@ const refreshTrans = debounce(() => {
         }
         console.log('请求翻译的节点', peddingNode.map(s => s.textContent))
         chrome.runtime.sendMessage({
-                action: "translateContent", text: peddingNode.map(node => {
+                action: "translateContent",
+                promtText:promtText,
+                text: peddingNode.map(node => {
                         node._$translate = 'doing';
                         const newNode = document.createElement('p')
                         newNode._$id = node._$id
@@ -52,23 +54,45 @@ const refreshTrans = debounce(() => {
         })
 }, 200)
 
+function clearPreData() {
+        inViewNodes = [];
+        loadingNode.forEach(s => s.remove());
+        appendsNodes.forEach(s => s.remove());
+        loadingNode = [];
+        appendsNodes = [];
+        allTextNodes.forEach(node => {
+                let id = generateUUID();
+                node._$id = id;
+                node._$translate = 'todo';
+                observer.observe(node);
+        })
+
+        loadingNode = [];
+}
+
 // 收集所有节点，并观察
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ sucess: true });
         if (message.action === 'translateRequest') {
-                gatherTextNodes(document.body).then(() => {
-                        console.log('收集到的节点', allTextNodes.map(s => s.textContent))
-                        allTextNodes.forEach((s, index) => {
-                                observer.observe(s)
-                                s._$sortIndex = index
+                promtText = message.payload.promtText;
+                if (allTextNodes.length > 0) {
+                        clearPreData();
+                } else {
+                        gatherTextNodes(document.body).then(() => {
+                                console.log('收集到的节点', allTextNodes.map(s => s.textContent))
+                                allTextNodes.forEach((s, index) => {
+                                        observer.observe(s)
+                                        s._$sortIndex = index
+                                })
                         })
-                })
+                }
+
         }
         if (message.action === 'translateItemCompleted') {
                 if (!message.payload) {
-                     return true;
+                        return true;
                 }
-             
+
                 const { id, text } = message.payload;
                 const node = allTextNodes.find(n => n._$id === id);
                 if (node) {
@@ -77,6 +101,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         newNode.textContent = text;
                         newNode.style.opacity = 0.6;
                         insertAfter(newNode, node);
+                        appendsNodes.push(newNode)
                         observer.unobserve(node);
                 }
                 const inNode = loadingNode.find(n => n._$id === id);
@@ -86,7 +111,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         inNode.remove()
                 }
         }
-       
+
         return true;
 });
 

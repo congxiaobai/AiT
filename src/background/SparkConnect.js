@@ -1,33 +1,11 @@
-// 地址必须填写，代表着大模型的版本号！！！！！！！！！！！！！！！！
 import CryptoJS from 'crypto-js';
-
 let httpUrl = new URL("https://spark-api.xf-yun.com/v3.5/chat");
-let modelDomain; // V1.1-V3.5动态获取，高于以上版本手动指定
-//APPID，APISecret，APIKey在https://console.xfyun.cn/services/cbm这里获取
-const APPID = '8f3e1a8e'
-const API_SECRET = 'ZDkwZjEyYzcxMDRkOTM0Zjk4ODk2ZmY1'
-const API_KEY = '52c0d2a4f3915462b88f0decc16532d1'
-export function getWebsocketUrl() {
-    // console.log(httpUrl.pathname)
-    // 动态获取domain信息
-    switch (httpUrl.pathname) {
-        case "/v1.1/chat":
-            modelDomain = "general";
-            break;
-        case "/v2.1/chat":
-            modelDomain = "generalv2";
-            break;
-        case "/v3.1/chat":
-            modelDomain = "generalv3";
-            break;
-        case "/v3.5/chat":
-            modelDomain = "generalv3.5";
-            break;
-    }
+let modelDomain = "generalv3.5"; // V3.5
+
+export function getWebsocketUrl(apiKey,apiSecret) {
 
     return new Promise((resolve, reject) => {
-        var apiKey = API_KEY
-        var apiSecret = API_SECRET
+
         var url = 'wss://' + httpUrl.host + httpUrl.pathname
         var host = location.host
         var date = new Date().toGMTString()
@@ -45,9 +23,13 @@ export function getWebsocketUrl() {
 
 export class TTSRecorder {
     constructor({
-        appId = APPID
+        spark_appId,
+        spark_apiSecret,
+        spark_apiKey
     } = {}) {
-        this.appId = appId
+        this.spark_appId = spark_appId;
+        this.spark_apiSecret = spark_apiSecret;
+        this.spark_apiKey = spark_apiKey;
     }
 
     // 修改状态
@@ -58,7 +40,7 @@ export class TTSRecorder {
     // 连接websocket
     connectWebSocket() {
         this.setStatus('ttsing')
-        return getWebsocketUrl().then(url => {
+        return getWebsocketUrl(this.spark_apiKey,this.spark_apiSecret).then(url => {
             let ttsWS = new WebSocket(url)
             this.ttsWS = ttsWS
             ttsWS.onopen = e => {
@@ -71,8 +53,6 @@ export class TTSRecorder {
             ttsWS.onerror = e => {
                 clearTimeout(this.playTimeout)
                 this.setStatus('error')
-
-                console.error(`详情查看：${encodeURI(url.replace('wss:', 'https:'))}`)
             }
             ttsWS.onclose = e => {
                 this.ttsWS = null;
@@ -83,11 +63,11 @@ export class TTSRecorder {
 
 
     // websocket发送数据
-    webSocketSend(items) {
+    webSocketSend(items, promtText) {
         this.total_res = []
         var params = {
             "header": {
-                "app_id": this.appId, "uid": "fd3f47e4-d"
+                "app_id": this.spark_appId, "uid": "fd3f47e4-d"
             }, "parameter": {
                 "chat": {
                     "domain": modelDomain, "temperature": 0.5, "max_tokens": 8191
@@ -95,7 +75,11 @@ export class TTSRecorder {
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content": "下面是一个数组,包含了id和text两个字段。请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。" + JSON.stringify(items)
+                        "role": "user", "content":
+                            `下面是一个数组,包含了id和text两个字段。
+                        请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，
+                        保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。
+                        这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。` + `${promtText ? '注意，本文由以下特质，可以参考：' + promtText : ''}` + JSON.stringify(items)
                     }]
                 }
             }
@@ -112,7 +96,7 @@ export class TTSRecorder {
         let jsonData = JSON.parse(resultData);
         if (jsonData?.payload?.choices?.text[0]?.content) {
             let tmp = jsonData?.payload?.choices?.text[0]?.content;
-            console.log('Socket:',tmp)
+            console.log('Socket:', tmp)
             for (let i = 0; i < tmp.length; i++) {
                 if (tmp[i] === '{' && this.total_res.length === 0) {
                     this.total_res.push('{')

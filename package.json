@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev:st": "rsbuild dev --open --config rsbuild.setting.config.mjs",
+    "dev:set": "rsbuild dev --open --config rsbuild.setting.config.mjs",
     "dev:pop": "rsbuild dev --open --config rsbuild.popup.config.mjs",
     "build": "rsbuild build",
     "preview": "rsbuild preview"
@@ -14,7 +14,8 @@
     "loadsh": "^0.0.4",
     "lodash": "^4.17.21",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tw-noti": "^1.1.0"
   },
   "devDependencies": {
     "@rsbuild/core": "^0.6.15",

@@ -1,51 +1,72 @@
 import { useEffect, useState } from 'react'
-import { Tabs, Tab, Card, CardBody, CardHeader, Divider, Input, Button, Link } from "@nextui-org/react";
+import { Input, Button } from "@nextui-org/react";
+import { useToast ,ToastProvider} from 'tw-noti';
 
 export default () => {
+    const { enqueueToast } = useToast();
     const [value, setValue] = useState({
-        appId: '',
-        apiSecret: '',
-        apiKey: ''
+        spark_appId: '',
+        spark_apiSecret: '',
+        spark_apiKey: ''
     })
     const [canSubmit, setCanSubmit] = useState(false)
+    const [loading, setLoading] = useState(false)
     useEffect(() => {
-        if (value.apiKey && value.apiSecret && value.appId) {
+        chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey'], (items) => {
+            items && setValue(items)
+        });
+    }, [])
+    useEffect(() => {
+        if (value.spark_apiKey && value.spark_apiSecret && value.spark_appId) {
             setCanSubmit(true)
         } else {
             setCanSubmit(false)
         }
     }, [value])
     const submit = () => {
-        chorme.storage.local.set({
-            spark_appId: value.appId,
-            spark_apiSecret: value.apiSecret,
-            spark_apiKey: value.apiKey
+        setLoading(true)
+        chrome.storage.sync.set({
+            spark_appId: value.spark_appId,
+            spark_apiSecret: value.spark_apiSecret,
+            spark_apiKey: value.spark_apiKey
+        },()=>{
+            setLoading(false)
+            if (chrome.runtime.lastError) {
+                enqueueToast({ content: '保存失败', type: 'success' })
+            } else {
+                enqueueToast({ content: '保存成功', type: 'success' })
+            }
         })
+
     }
     return <div className="flex flex-col gap-6 p-2">
         <Input
             label="APPID" isRequired
-            defaultValue="请在官网获取"
+            placeholder="请在官网获取"
             className="max-w-xs" isClearable={true}
-            value={value.appId}
-            onChange={(e) => setValue({ ...value, appId: e.target.value })}
+            value={value.spark_appId}
+            onChange={(e) => setValue({ ...value, spark_appId: e.target.value })}
         />
         <Input
             label="API_SECRET" isRequired
-            defaultValue="请在官网获取" isClearable={true}
-            className="max-w-xs" value={value.apiSecret}
-            onChange={(e) => setValue({ ...value, apiSecret: e.target.value })}
+            placeholder="请在官网获取" isClearable={true}
+            className="max-w-xs" value={value.spark_apiSecret}
+            onChange={(e) => setValue({ ...value, spark_apiSecret: e.target.value })}
 
         />
         <Input
             label="API_KEY" isRequired
-            defaultValue="请在官网获取" isClearable={true}
-            className="max-w-xs" value={value.apiKey}
-            onChange={(e) => setValue({ ...value, apiKey: e.target.value })}
+            placeholder="请在官网获取" isClearable={true}
+            className="max-w-xs" value={value.spark_apiKey}
+            onChange={(e) => setValue({ ...value, spark_apiKey: e.target.value })}
 
         />
         <div>
-            <Button color="primary" isDisabled={!canSubmit} onClick={submit}>提交</Button>
+         <ToastProvider containerClasses='right-12 bottom-12'>
+
+            <Button  isLoading={loading} color="primary" isDisabled={!canSubmit} onClick={submit}>保存</Button>
+            </ToastProvider>
+
         </div>
 
     </div>
