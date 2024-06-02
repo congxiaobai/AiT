@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs, Tab, Card, CardBody, CardHeader, Divider, CardFooter, Link } from "@nextui-org/react";
 import Spark from "./Spark";
+import Kimi from "./Kimi";
 export default function App() {
 
     return (
@@ -45,11 +46,29 @@ export default function App() {
                             <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
                                 <div className="flex flex-col">
                                     <h4 className="text-md">月之暗面出品</h4>
-                                    <p className="text-small text-default-500">翻译质量较好，新秀的大模型独角兽企业</p>
+                                    <p className="text-small text-default-500">国内领先的独角兽AI企业，注册送15元费用。计费方式不确定。</p>
                                 </div>
                             </CardHeader>
                             <CardBody>
+                                <Kimi></Kimi>
                             </CardBody>
+                            <Divider className="mt-2 mb-2" />
+                            <CardFooter>
+
+                                <div className="flex-col gap-2">
+                                    <div> 申请指南</div>
+                                    <div className="text-md text-default-500 p-1">
+                                        1.  <Link href="https://platform.moonshot.cn/docs/intro#%E4%B8%BB%E8%A6%81%E6%A6%82%E5%BF%B5" isExternal={true}>点击这里</Link>申请账号</div>
+                                    <div className="text-md text-default-500 p-1">
+                                        2. 进入控制台，在左侧菜单栏里选择'API Key' 管理</div>
+                                    <div className="text-md text-default-500 p-1" >
+                                        3. 生成API Key。注意，API Key在生成之后，需要自己复制保存起来，因为只有key只有在生成时可见，其他时间是无法查看的</div>
+                                    <div className="text-md text-default-500 p-1" >
+                                        4. Kimi翻译会有点慢</div>
+                                    <p>联系作者:congxiaobai1233@gmail.com</p>
+                                </div>
+
+                            </CardFooter>
                         </Card>
                     </Tab>
                     <Tab key="tongyi" className="flex-1" title={<div className="p-2">通义千问</div>}>

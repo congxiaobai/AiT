@@ -21,7 +21,7 @@ export function getWebsocketUrl(apiKey,apiSecret) {
     })
 }
 
-export class TTSRecorder {
+export class SparkTTSRecorder {
     constructor({
         spark_appId,
         spark_apiSecret,

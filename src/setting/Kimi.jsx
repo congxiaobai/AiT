@@ -11,7 +11,7 @@ export default () => {
     const [loading, setLoading] = useState(false)
     useEffect(() => {
         chrome?.storage?.sync?.get(['kimi_apiKey'], (items) => {
-            items && setValue(items.kimi_apiKey)
+            items && setValue(items)
         });
     }, [])
     useEffect(() => {
@@ -39,10 +39,10 @@ export default () => {
     return <div className="flex flex-col gap-6 p-2">
         <Input
             label="ApiKey" isRequired
-            placeholder="请在官网获取"
             className="max-w-xs" isClearable={true}
             value={value.kimi_apiKey}
-            onChange={(e) => setValue({ ...value, kimi_apiKey: e.target.value })}
+            onChange={(e) => setValue({kimi_apiKey: e.target.value })}
+            onClear={() => setValue({kimi_apiKey: '' })}
         />
 
         <div>

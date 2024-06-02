@@ -45,12 +45,16 @@ export default () => {
             placeholder="请在官网获取"
             className="max-w-xs" isClearable={true}
             value={value.spark_appId}
+            onClear={() => setValue({ ...value, spark_appId: '' })}
+
             onChange={(e) => setValue({ ...value, spark_appId: e.target.value })}
         />
         <Input
             label="API_SECRET" isRequired
             placeholder="请在官网获取" isClearable={true}
             className="max-w-xs" value={value.spark_apiSecret}
+            onClear={() => setValue({ ...value, spark_apiSecret: '' })}
+
             onChange={(e) => setValue({ ...value, spark_apiSecret: e.target.value })}
 
         />
@@ -58,6 +62,7 @@ export default () => {
             label="API_KEY" isRequired
             placeholder="请在官网获取" isClearable={true}
             className="max-w-xs" value={value.spark_apiKey}
+            onClear={() => setValue({ ...value, spark_apiKey: '' })}
             onChange={(e) => setValue({ ...value, spark_apiKey: e.target.value })}
 
         />

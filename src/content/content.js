@@ -93,25 +93,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 if (!message.payload) {
                         return true;
                 }
+                const res = message.payload;
+                if (Array.isArray(res)) {
+                        res.forEach(item => {
+                                const { id, text } = item;
+                                console.log('收到翻译文本', text)
 
-                const { id, text } = message.payload;
-                console.log('收到翻译文本', text)
+                                const node = allTextNodes.find(n => n._$id === id);
+                                if (node) {
+                                        node._$translate = 'done';
+                                        const newNode = node.cloneNode(true);
+                                        newNode.textContent = text;
+                                        newNode.style.opacity = 0.6;
+                                        insertAfter(newNode, node);
+                                        appendsNodes.push(newNode)
+                                        observer.unobserve(node);
+                                }
+                                const inNode = loadingNode.find(n => n._$id === id);
 
-                const node = allTextNodes.find(n => n._$id === id);
-                if (node) {
-                        node._$translate = 'done';
-                        const newNode = node.cloneNode(true);
-                        newNode.textContent = text;
-                        newNode.style.opacity = 0.6;
-                        insertAfter(newNode, node);
-                        appendsNodes.push(newNode)
-                        observer.unobserve(node);
+                                if (inNode) {
+                                        inNode.remove()
+                                }
+                        })
                 }
-                const inNode = loadingNode.find(n => n._$id === id);
 
-                if (inNode) {
-                        inNode.remove()
-                }
         }
 
         return true;
