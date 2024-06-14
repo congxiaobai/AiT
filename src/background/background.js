@@ -4,7 +4,6 @@ import { KimiTTSRecorder } from './KimiConnect';
 
 chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
-
 });
 
 
@@ -16,6 +15,14 @@ function kimiTranslate(textArray, promtText) {
         });
 
 }
+function tongyiTranslate(textArray, promtText) {
+        chrome?.storage?.sync?.get(['tongyi_apiKey'], (tongyiConfig) => {
+                if (kimiConfig.kimi_apiKey) {
+                        tongyiTranslateText(textArray, tongyiConfig, promtText)
+                }
+        });
+
+}
 function sparkTranslate(textArray, promtText) {
         chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey'], (sparkConfig) => {
                 if (sparkConfig) {
@@ -23,6 +30,18 @@ function sparkTranslate(textArray, promtText) {
                 }
         });
 
+}
+
+async function tongyiTranslateText(textArray, tongyiConfig, promtText) {
+        const onResult=()=>{
+                let payload = JSON.parse(res)
+             
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
+
+                        });
+                })
+        }
 }
 
 async function sparkTranslateText(textArray, sparkConfig, promtText) {
@@ -67,30 +86,24 @@ async function kimiTranslateText(textArray, kimiConfig, promtText) {
         if (!textArray || textArray.length === 0) {
                 return
         }
-        const batchSize = 3;
-        try {
-                for (let i = 0; i < textArray.length; i += batchSize) {
-                        const batch = textArray.slice(i, i + batchSize);
-                        let Record = new KimiTTSRecorder(kimiConfig);
-                        Record.onEnd = () => {
-                                Record.setStatus('close')
-                        }
-                        Record.onResult = (res) => {
-                                try {
-                                        let payload = JSON.parse(res)
-                                        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                                                tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
-
-                                                });
-                                        })
-                                } catch {
-
-                                }
-
-                        }
-                        Record.sendText(batch, promtText)
+        try { let Record = new KimiTTSRecorder(kimiConfig);
+                Record.onEnd = () => {
+                        Record.setStatus('close')
                 }
+                Record.onResult = (res) => {
+                        try {
+                                let payload = JSON.parse(res)
+                                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                                        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
 
+                                        });
+                                })
+                        } catch {
+
+                        }
+
+                }
+                Record.sendText(batch, promtText)
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
