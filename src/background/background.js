@@ -6,76 +6,50 @@ chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
 });
 
-
-function kimiTranslate(textArray, promtText) {
-        chrome?.storage?.sync?.get(['kimi_apiKey'], (kimiConfig) => {
-                if (kimiConfig.kimi_apiKey) {
-                        kimiTranslateText(textArray, kimiConfig, promtText)
-                }
-        });
-
-}
-function tongyiTranslate(textArray, promtText) {
-        chrome?.storage?.sync?.get(['tongyi_apiSecret'], (tongyiConfig) => {
-                if (tongyiConfig.tongyi_apiSecret) {
-                        tongyiTranslateText(textArray, tongyiConfig, promtText)
-                }
-        });
-
-}
-function sparkTranslate(textArray, promtText) {
-        chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey'], (sparkConfig) => {
-                if (sparkConfig) {
-                        sparkTranslateText(textArray, sparkConfig, promtText)
-                }
-        });
-
+const TransConfig = {
+        kimi: ['kimi_apiKey'],
+        spark: ['spark_apiKey', 'spark_apiSecret', 'spark_appId'],
+        tongyi: ['tongyi_apiSecret']
 }
 
-async function tongyiTranslateText(textArray, tongyiConfig, promtText) {
+const TransRcord = {
+        kimi: kimiTranslateText,
+        tongyi: tongyiTranslateText,
+        spark: sparkTranslateText
+}
+
+async function tongyiTranslateText(textArray, tongyiConfig, promtText, sendResponse) {
         if (!textArray || textArray.length === 0) {
+                sendResponse([])
                 return
         }
         try {
-                const onResult = (res) => {
-                        let payload = JSON.parse(res)
+                TongYiConnect(textArray, tongyiConfig, promtText, (res) => {     
+                       console.log('translateItemCompleted',res.map(s=>s.id).join(';'))
+                        sendResponse(res)
+                        // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
+                }, () => { })
 
-                        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                                tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
-
-                                });
-                        })
-                }
-                TongYiConnect(textArray, tongyiConfig, promtText, onResult, () => { })
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 return JSON.stringify({ messages: textArray });
         }
 }
 
-async function sparkTranslateText(textArray, sparkConfig, promtText) {
+async function sparkTranslateText(textArray, sparkConfig, promtText, sendResponse) {
         if (!textArray || textArray.length === 0) {
+                sendResponse()
                 return
         }
         try {
                 let WebConnect = new SparkTTSRecorder(sparkConfig);
-
+                let allRes = []
                 WebConnect.onEnd = () => {
-                        WebConnect.setStatus('close')
+                        sendResponse(allRes)
                 }
-
                 WebConnect.onResult = (res) => {
-                        try {
-                                let payload = JSON.parse(res)
-                                console.log('翻译成功23', JSON.parse(res));
-                                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                                        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
-
-                                        });
-                                })
-                        } catch {
-
-                        }
+                        let payload = JSON.parse(res)
+                        allRes.push(payload)
 
                 }
                 WebConnect.onOpen = () => {
@@ -88,10 +62,11 @@ async function sparkTranslateText(textArray, sparkConfig, promtText) {
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
+                sendResponse()
                 return JSON.stringify({ messages: textArray });
         }
 }
-async function kimiTranslateText(textArray, kimiConfig, promtText) {
+async function kimiTranslateText(textArray, kimiConfig, promtText, sendResponse) {
         if (!textArray || textArray.length === 0) {
                 return
         }
@@ -124,17 +99,15 @@ async function kimiTranslateText(textArray, kimiConfig, promtText) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (request.action === "translateContent" && request.text) {
                 chrome?.storage?.sync?.get(['trans_modal'], (items) => {
-                        if (items.trans_modal === 'spark') {
-                                sparkTranslate(request.text, request.promtText)
-                        }
-                        else if (items.trans_modal === 'kimi') {
-                                kimiTranslate(request.text, request.promtText)
-                        }
-                        else if (items.trans_modal === 'tongyi') {
-                                tongyiTranslate(request.text, request.promtText)
-                        }
+                        const configKey = TransConfig[items.trans_modal];
+                        chrome?.storage?.sync?.get(configKey, (config) => {
+                                if (config) {
+                                        TransRcord[items.trans_modal](request.text, config, request.promtText, sendResponse)
+                                }
+                        })
                 })
                 return true; // Indicates an asynchronous response is expected
+        } else {
+                sendResponse()
         }
-        sendResponse()
 });

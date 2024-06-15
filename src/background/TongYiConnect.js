@@ -1,14 +1,13 @@
 // 导入必要的库，如axios用于发送HTTP请
 import axios from 'axios';
 const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+const jsonPattern = /```json\n([\s\S]*?)\n```/;
 
 export default (textArray, config, promtText, onResult, onClose) => {
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.tongyi_apiSecret}`, // 使用process.env访问环境变量
-        'X-DashScope-SSE': 'enable',
-        'Accept': 'text/event-stream',
-        responseType: 'stream'
+        'Authorization': `Bearer ${config.tongyi_apiSecret}`,
+
     };
     const body = {
         model: "qwen-turbo",
@@ -28,78 +27,27 @@ export default (textArray, config, promtText, onResult, onClose) => {
             ]
         },
         parameters: {
-            incremental_output: true,
             result_format: "message"
         }
     };
 
-
-    fetch(url, { method: 'POST', headers, body: JSON.stringify(body) }).then(response => {
-        const reader = response.body.getReader();
-        let allMessage = [];
-        const pattern = /"content":"(.*?)","role"/g;
-
-        function processStream({ done, value }) {
-            // 当没有更多数据时，done为true
-            if (done) {
-                console.log('Stream complete');
-                return;
+    axios.post(url, body, {
+        headers
+    }).then(response => {
+        if (response?.data?.output?.choices) {
+            const allRes =response.data.output.choices.map(s => s.message?.content).join('')
+            const match = jsonPattern.exec(allRes);
+            if (match) {
+                // 提取并解析JSON字符串
+                const jsonString = match[1];
+                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+                onResult(jsonData)
             }
+            
 
-            // 处理解析后的数据块，例如将Uint8Array转换为字符串
-            const chunkText = new TextDecoder().decode(value);
-
-            // 使用正则表达式找到"data:"后面直到换行符的JSON字符串部分
-            const dataRegex = /data:(.*?)(?=\n|$)/s;
-            const jsonDataMatch = chunkText.match(dataRegex);
-            console.log({ chunkText })
-            if (jsonDataMatch) {
-                const jsonString = jsonDataMatch[1].trim(); // 移除前导和尾随的空白字符
-                try {
-                    // 将找到的字符串解析为JSON对象
-                    const jsonData = JSON.parse(jsonString);
-
-                    // 从JSON对象中提取content字段的值
-                    const tmp = jsonData.output.choices[0].message.content;
-                    console.log({ tmp })
-                    if (tmp) {
-                        for (let i = 0; i < tmp.length; i++) {
-                            if (tmp[i] === '{' && allMessage.length === 0) {
-                                allMessage.push('{')
-                                continue;
-                            }
-                            if (allMessage[0] === '{' && tmp[i] !== '}') {
-                                allMessage.push(tmp[i]);
-                                continue;
-                            }
-                            if (tmp[i] === '}' && allMessage[0] === '{') {
-                                allMessage.push('}')
-                                onResult(allMessage.join(''));
-                                allMessage = [];
-                                continue;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                }
-            } else {
-                console.log('Data not found in the text.');
-            }
-
-            // 继续读取流
-            return reader.read().then(processStream);
+        } else {
+            onResult([])
         }
-        return reader.read().then(processStream);
-    }).catch(err => {
-        console.log({ err })
-    });
-    // axios.post(url, body, { headers})
-    //     .then(response => {
-    //        console.log(response.data)
-    //     })
-    //     .catch(error => {
-    //         console.error('请求出错：', error);
+    })
 
-    //     });
 }

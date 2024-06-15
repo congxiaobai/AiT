@@ -33,25 +33,7 @@ const refreshTrans = debounce(() => {
                 return
         }
         console.log('请求翻译的节点', peddingNode.map(s => s.textContent))
-        chrome.runtime.sendMessage({
-                action: "translateContent",
-                promtText: promtText,
-                text: peddingNode.map(node => {
-                        node._$translate = 'doing';
-                        const newNode = document.createElement('p')
-                        newNode._$id = node._$id
-                        newNode.classList.add('translate_loading')
-                        newNode.style.opacity = 0.6;
-                        insertAfter(newNode, node)
-                        loadingNode.push(newNode)
-                        return {
-                                id: node._$id,
-                                text: node.textContent,
-                        }
-                })
-        }, () => {
-
-        })
+        translateInBatches(peddingNode, 6)
 }, 200)
 
 function clearPreData() {
@@ -89,35 +71,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
 
         }
-        if (message.action === 'translateItemCompleted') {
-                if (!message.payload) {
-                        return true;
-                }
-                const res = message.payload;
-                if (Array.isArray(res)) {
-                        res.forEach(item => {
-                                const { id, text } = item;
-                                console.log('收到翻译文本', text)
-
-                                const node = allTextNodes.find(n => n._$id === id);
-                                if (node) {
-                                        node._$translate = 'done';
-                                        const newNode = node.cloneNode(true);
-                                        newNode.textContent = text;
-                                        newNode.style.opacity = 0.6;
-                                        insertAfter(newNode, node);
-                                        appendsNodes.push(newNode)
-                                        observer.unobserve(node);
-                                }
-                                const inNode = loadingNode.find(n => n._$id === id);
-
-                                if (inNode) {
-                                        inNode.remove()
-                                }
-                        })
-                }
-
-        }
 
         return true;
 });
@@ -143,7 +96,55 @@ async function gatherTextNodes(element) {
 
 
 
+async function translateInBatches(peddingNode, batchSize) {
 
+         for (let i = 0; i < peddingNode.length; i += batchSize) {
+                const batch = peddingNode.slice(i, i + batchSize);
+                console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
+                chrome.runtime.sendMessage({
+                        action: "translateContent",
+                        promtText: promtText,
+                        text: batch.map(node => {
+                                node._$translate = 'doing';
+                                const newNode = document.createElement('p')
+                                newNode._$id = node._$id
+                                newNode.classList.add('translate_loading')
+                                newNode.style.opacity = 0.6;
+                                insertAfter(newNode, node)
+                                loadingNode.push(newNode)
+                                return {
+                                        id: node._$id,
+                                        text: node.textContent,
+                                }
+                        })
+                }, (res) => {
+                        console.log('翻译后的节点', res.map(s => s.id).join(';'));
+
+                        if (Array.isArray(res)) {
+
+                                res.forEach(item => {
+                                        const { id, text } = item;
+                                        const node = allTextNodes.find(n => n._$id === id);
+                                        if (node) {
+                                                node._$translate = 'done';
+                                                const newNode = node.cloneNode(true);
+                                                newNode.textContent = text;
+                                                newNode.style.opacity = 0.6;
+                                                insertAfter(newNode, node);
+                                                appendsNodes.push(newNode)
+                                                console.log('收到翻译文本', id)
+
+                                                observer.unobserve(node);
+                                        }
+                                        const inNode = loadingNode.find(n => n._$id === id);
+                                        if (inNode) {
+                                                inNode.remove()
+                                        }
+                                })
+                        }
+                })
+        }
+}
 
 
 
