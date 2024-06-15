@@ -40,7 +40,7 @@ export default () => {
   return (
     <div className="flex flex-col gap-6 p-2">
       <Input
-        label="API_SECRET"
+        label="API_KEY"
         isRequired
         placeholder="请在官网获取"
         isClearable={true}

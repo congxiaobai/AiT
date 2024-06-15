@@ -26,13 +26,20 @@ const App = () => {
       setSourceLang(items.detecLang)
     });
     let disabledKeys = []
-    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey'], (items) => {
+    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiSecret', 'doubao_apiKey'], (items) => {
       if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
         disabledKeys.push('spark')
       } else if (!items.kimi_apiKey) {
         disabledKeys.push('kimi')
       }
-      else if (items.trans_modal) {
+      else if (!items.tongyi_apiSecret) {
+        disabledKeys.push('tongyi')
+      }
+      else if (!items.doubao_apiKey) {
+        disabledKeys.push('doubao')
+      }
+      
+      if (items.trans_modal) {
         setAiModal(items.trans_modal)
       } else {
         setAiModal('spark')
@@ -101,7 +108,7 @@ const App = () => {
         翻译
       </Button>
       <div>
-        <Button isIconOnly  className='bg-white' size='sm' onClick={() => {
+        <Button isIconOnly className='bg-white' size='sm' onClick={() => {
           chrome.runtime.openOptionsPage(function () {
             console.log('Options page opened.');
           });

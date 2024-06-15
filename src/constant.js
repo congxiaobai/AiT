@@ -9,6 +9,6 @@ export const sourceLangOptions = [
 export const aiModalOptions = [
     { label: "星火3.5", value: "spark" },
     { label: "Kimi", value: "kimi" },
-    // { label: "通义", value: "tongyi" },
-    // { label: "扣子", value: "coze" },
+    { label: "通义", value: "tongyi" },
+    { label: "豆包", value: "doubao" },
   ]
