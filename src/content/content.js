@@ -13,6 +13,16 @@ if (document.readyState !== 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => detecLang());
         });
+        document.addEventListener('selectionchange', function () {
+                var text = window.getSelection().toString()?.trim();
+                if (text) {
+                        chrome.runtime.sendMessage({
+                                action: 'showPopup',
+                                text: text
+                        })
+                }
+        });
+
 }
 const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -98,7 +108,7 @@ async function gatherTextNodes(element) {
 
 async function translateInBatches(peddingNode, batchSize) {
 
-         for (let i = 0; i < peddingNode.length; i += batchSize) {
+        for (let i = 0; i < peddingNode.length; i += batchSize) {
                 const batch = peddingNode.slice(i, i + batchSize);
                 console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
                 chrome.runtime.sendMessage({

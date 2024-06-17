@@ -10,7 +10,8 @@
     "tabs",
     "storage",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "notifications"
   ],
   "options_page": "setting.html",
   "content_scripts": [
