@@ -4,7 +4,26 @@ import { KimiTTSRecorder } from './KimiConnect';
 import TongYiConnect from './TongYiConnect';
 chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
+        chrome.contextMenus.create({
+                id: 'myExtensionContextMenu',
+                title: '翻译',
+                contexts: ['selection'], // 可以是['page','image','video','audio','frame','launcher','browser_action','page_action']等，这里设为'all'表示在所有上下文都显示
+
+        }, function () {
+                if (chrome.runtime.lastError) {
+                        console.error('创建右键菜单时出错:', chrome.runtime.lastError);
+                }
+        });
 });
+// 监听上下文菜单项的点击事件
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+        if (info.menuItemId === 'myExtensionContextMenu') {
+                // 在此处理点击事件
+                console.log('右键菜单被点击');
+                chrome.tabs.sendMessage(tab.id, { action: 'contextMenuClicked',selectionText:info.selectionText });
+        }
+});
+
 
 const TransConfig = {
         kimi: ['kimi_apiKey'],
@@ -24,8 +43,8 @@ async function tongyiTranslateText(textArray, tongyiConfig, promtText, sendRespo
                 return
         }
         try {
-                TongYiConnect(textArray, tongyiConfig, promtText, (res) => {     
-                       console.log('translateItemCompleted',res.map(s=>s.id).join(';'))
+                TongYiConnect(textArray, tongyiConfig, promtText, (res) => {
+                        console.log('translateItemCompleted', res.map(s => s.id).join(';'))
                         sendResponse(res)
                         // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
                 }, () => { })

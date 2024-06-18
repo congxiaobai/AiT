@@ -21,6 +21,12 @@ const App = () => {
       trans_modal: aiModal
     })
   }, [aiModal])
+  chrome.runtime.onMessage.addListener(function (request, sender,) {
+    if (request.action === "loading") {
+      setBtnLoading(request.loading);
+    }
+    return true;
+  });
   useEffect(() => {
     chrome?.storage?.sync?.get(['detecLang'], (items) => {
       setSourceLang(items.detecLang)
@@ -38,7 +44,7 @@ const App = () => {
       else if (!items.doubao_apiKey) {
         disabledKeys.push('doubao')
       }
-      
+
       if (items.trans_modal) {
         setAiModal(items.trans_modal)
       } else {
@@ -62,7 +68,7 @@ const App = () => {
         }
       }, response => {
         setBtnLoading(true);
-        setTimeout(() => setBtnLoading(false), 3000)
+
       });
     });
   }, 200)

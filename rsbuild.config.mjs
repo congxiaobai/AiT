@@ -8,7 +8,7 @@ export default defineConfig({
         index: './src/popup/index.jsx',
         setting: './src/setting/index.jsx',
         background: './src/background/background.js',
-        content: './src/content/content.js',
+        content: './src/content/content.jsx',
       }
   },
   html: {

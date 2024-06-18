@@ -28,3 +28,20 @@ export function istextNode(node) {
 export function isElementNode(node) {
     return node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', '#comment', '#cdata-section', 'FOOTER', 'HEADER'].includes(node.nodeName)
 }
+export function findPNode(node) {
+    if (!istextNode(node) && node.parentNode) {
+        return findPNode(node.parentNode)
+    }
+    return node;
+}
+export function getSelctionTextConent(node) {
+    if (istextNode(node)) {
+        return node.textContent.trim();
+    }
+    if (node.parentNode) {
+        const pnode = findPNode(node)
+        return pnode.textContent.trim();
+    }
+    return ''
+
+}

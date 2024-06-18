@@ -1,11 +1,16 @@
 import debounce from 'lodash/debounce'
-
+import ReactDOM from 'react-dom/client';
+import React from 'react';
+import TextContent from './TextContent';
 let allTextNodes = [];
 let loadingNode = [];
 let inViewNodes = [];
 let appendsNodes = [];
 let promtText = ''
-import { detecLang, generateUUID, istextNode, isElementNode, insertAfter } from './util'
+let textPopup = null;
+let seselectionText = '';
+let postion = { x: 0, y: 0 }
+import { detecLang, generateUUID, istextNode, isElementNode, insertAfter, getSelctionTextConent } from './util'
 
 if (document.readyState !== 'loading') {
         setTimeout(() => detecLang());
@@ -13,17 +18,27 @@ if (document.readyState !== 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => detecLang());
         });
-        document.addEventListener('selectionchange', function () {
-                var text = window.getSelection().toString()?.trim();
-                if (text) {
-                        chrome.runtime.sendMessage({
-                                action: 'showPopup',
-                                text: text
-                        })
-                }
-        });
+
 
 }
+document.addEventListener('mouseup', function (event) {
+        var text = window.getSelection().toString()?.trim();
+        if (text) {
+                seselectionText = getSelctionTextConent(event.target);
+                postion = {
+                        x: event.pageX,
+                        y: event.pageY
+                }
+
+        }
+});
+document.addEventListener('mousedown', function (event) {
+
+        if (textPopup) {
+                textPopup.remove();
+                textPopup = null
+        }
+});
 const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -81,6 +96,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
 
         }
+        if ('contextMenuClicked' === message.action) {
+                var text = message.selectionText
+                if (text) {
+                        console.log({ text, seselectionText });
+
+                        textPopup = document.createElement('div');
+                        textPopup.id = 'react-popup';
+                        textPopup.style.position = 'absolute';
+                        textPopup.style.left = postion.x + 'px';
+                        textPopup.style.top = postion.y + 'px';
+
+                        textPopup.style.zIndex = 1000;
+                        document.body.appendChild(textPopup);
+                        const root = ReactDOM.createRoot(textPopup);
+
+                        root.render(
+                                React.createElement(TextContent, { text: text }),
+                        );
+                }
+        }
 
         return true;
 });
@@ -112,6 +147,9 @@ async function translateInBatches(peddingNode, batchSize) {
                 const batch = peddingNode.slice(i, i + batchSize);
                 console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
                 chrome.runtime.sendMessage({
+                        action: "loading", loading: true
+                })
+                chrome.runtime.sendMessage({
                         action: "translateContent",
                         promtText: promtText,
                         text: batch.map(node => {
@@ -129,7 +167,9 @@ async function translateInBatches(peddingNode, batchSize) {
                         })
                 }, (res) => {
                         console.log('翻译后的节点', res.map(s => s.id).join(';'));
-
+                        chrome.runtime.sendMessage({
+                                action: "loading", loading: false
+                        })
                         if (Array.isArray(res)) {
 
                                 res.forEach(item => {

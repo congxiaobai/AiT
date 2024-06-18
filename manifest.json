@@ -11,7 +11,7 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
-    "notifications"
+    "contextMenus"
   ],
   "options_page": "setting.html",
   "content_scripts": [
