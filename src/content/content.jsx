@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce'
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import TextContent from './TextContent';
+import './content.css'
 let allTextNodes = [];
 let loadingNode = [];
 let inViewNodes = [];
@@ -26,8 +27,8 @@ document.addEventListener('mouseup', function (event) {
         if (text) {
                 seselectionText = getSelctionTextConent(event.target);
                 postion = {
-                        x: event.pageX,
-                        y: event.pageY
+                        x: event.clientX,
+                        y: event.clientY
                 }
 
         }
@@ -102,6 +103,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         console.log({ text, seselectionText });
 
                         textPopup = document.createElement('div');
+                        textPopup.addEventListener('mousedown', (e) => {
+                                e.stopPropagation();
+                                e.stopImmediatePropagation()
+                        })
                         textPopup.id = 'react-popup';
                         textPopup.style.position = 'absolute';
                         textPopup.style.left = postion.x + 'px';
@@ -112,7 +117,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         const root = ReactDOM.createRoot(textPopup);
 
                         root.render(
-                                React.createElement(TextContent, { text: text }),
+                                React.createElement(TextContent, { text: text, seselectionText }),
                         );
                 }
         }
