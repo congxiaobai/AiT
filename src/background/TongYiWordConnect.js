@@ -19,8 +19,8 @@ export default (text, config, promtText, onResult, onClose) => {
                 },
                 {
                     role: "user",
-                    content: promtText ? `请分析"${text}"的一般含义，以及在“${promtText}”这段文字中${text}的含义。尽量简略一点,150字以内,返回的内容至少有两个换行。` :
-                        `请分析"${text}"的一般含义和用法，如果有词源可以讲一下词源。尽量简略一点,150字以内,返回的内容至少有一次换行。`
+                    content: promtText ? `请分析"${text}"的一般含义，以及在“${promtText}”这段文字中${text}的含义。尽量简略一点,100字以内,返回的内容至少有两个换行。` :
+                        `请分析"${text}"的一般含义和用法，如果有词源可以讲一下词源。尽量简略一点,100字以内,返回的内容至少有一次换行。`
                 }
             ]
         },

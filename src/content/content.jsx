@@ -18,9 +18,27 @@ if (document.readyState !== 'loading') {
 } else {
         document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => detecLang());
+                clearChache();
         });
-
-
+}
+function clearChache() {
+        chrome.storage.sync.get(null, function (items) {
+                if (chrome.runtime.lastError) {
+                        console.error('Error getting items: ' + chrome.runtime.lastError);
+                } else {
+                        console.log('All stored items:', items);
+                        // 这里可以遍历items对象来处理每个存储的键值对
+                        for (var key in items) {
+                                if (key.startsWith('cacheNoes&&') && items.hasOwnProperty(key)) {
+                                        const value = items[key]['&chche&time'];
+                                        //清除超过1天的缓存
+                                        if (value && Date.now() - value > 24 * 60 * 60 * 1000) {
+                                                chrome.storage.sync.remove('key')
+                                        }
+                                }
+                        }
+                }
+        });
 }
 document.addEventListener('mouseup', function (event) {
         var text = window.getSelection().toString()?.trim();
@@ -34,7 +52,6 @@ document.addEventListener('mouseup', function (event) {
         }
 });
 document.addEventListener('mousedown', function (event) {
-
         if (textPopup) {
                 textPopup.remove();
                 textPopup = null
@@ -144,60 +161,90 @@ async function gatherTextNodes(element) {
 }
 
 
-
-
 async function translateInBatches(peddingNode, batchSize) {
-
-        for (let i = 0; i < peddingNode.length; i += batchSize) {
-                const batch = peddingNode.slice(i, i + batchSize);
-                console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
-                chrome.runtime.sendMessage({
-                        action: "loading", loading: true
-                })
-                chrome.runtime.sendMessage({
-                        action: "translateContent",
-                        promtText: promtText,
-                        text: batch.map(node => {
-                                node._$translate = 'doing';
-                                const newNode = document.createElement('p')
-                                newNode._$id = node._$id
-                                newNode.classList.add('translate_loading')
-                                newNode.style.opacity = 0.6;
-                                insertAfter(newNode, node)
-                                loadingNode.push(newNode)
-                                return {
-                                        id: node._$id,
-                                        text: node.textContent,
+        var currentURL = 'cacheNoes&&' + window.location.href;
+        const unTransNode = []
+        chrome?.storage?.sync?.get([currentURL], (items) => {
+                const allCacheTextNodes = items[currentURL] || {};
+                if (allCacheTextNodes) {
+                        peddingNode.forEach(node => {
+                                const cacheText = allCacheTextNodes[node.textContent]
+                                if (cacheText) {
+                                        addtranslateNode(node._$id, cacheText)
+                                } else {
+                                        unTransNode.push(node)
                                 }
                         })
-                }, (res) => {
-                        console.log('翻译后的节点', res.map(s => s.id).join(';'));
+                } else {
+                        unTransNode = peddingNode
+                }
+                for (let i = 0; i < unTransNode.length; i += batchSize) {
+                        const batch = unTransNode.slice(i, i + batchSize);
+                        console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
                         chrome.runtime.sendMessage({
-                                action: "loading", loading: false
+                                action: "loading", loading: true
                         })
-                        if (Array.isArray(res)) {
-
-                                res.forEach(item => {
-                                        const { id, text } = item;
-                                        const node = allTextNodes.find(n => n._$id === id);
-                                        if (node) {
-                                                node._$translate = 'done';
-                                                const newNode = node.cloneNode(true);
-                                                newNode.textContent = text;
-                                                newNode.style.opacity = 0.6;
-                                                insertAfter(newNode, node);
-                                                appendsNodes.push(newNode)
-                                                console.log('收到翻译文本', id)
-
-                                                observer.unobserve(node);
-                                        }
-                                        const inNode = loadingNode.find(n => n._$id === id);
-                                        if (inNode) {
-                                                inNode.remove()
+                        chrome.runtime.sendMessage({
+                                action: "translateContent",
+                                promtText: promtText,
+                                text: batch.map(node => {
+                                        node._$translate = 'doing';
+                                        const newNode = document.createElement('p')
+                                        newNode._$id = node._$id
+                                        newNode.classList.add('translate_loading')
+                                        newNode.style.opacity = 0.6;
+                                        insertAfter(newNode, node)
+                                        loadingNode.push(newNode)
+                                        return {
+                                                id: node._$id,
+                                                text: node.textContent,
                                         }
                                 })
-                        }
-                })
+                        }, (res) => {
+                                console.log('翻译后的节点', res.map(s => s.id).join(';'));
+                                chrome.runtime.sendMessage({
+                                        action: "loading", loading: false
+                                })
+                                if (Array.isArray(res)) {
+                                        const newCacheNodes = {}
+                                        res.forEach(item => {
+                                                const { id, text } = item;
+                                                addtranslateNode(id, text)
+                                                const node = allTextNodes.find(n => n._$id === id);
+                                                if (node) {
+                                                        newCacheNodes[node.textContent] = text
+                                                }
+                                        })
+                                        chrome?.storage?.sync?.get([currentURL], (items) => {
+                                                const newValue = {
+                                                        ...(items[currentURL] || {}),
+                                                        ...newCacheNodes,
+                                                        '&chche&time': Date.now()
+                                                }
+                                                chrome?.storage?.sync?.set(currentURL, newValue)
+                                        })
+                                }
+                        })
+                }
+        });
+
+}
+function addtranslateNode(id, text) {
+        const node = allTextNodes.find(n => n._$id === id);
+        if (node) {
+                node._$translate = 'done';
+                const newNode = node.cloneNode(true);
+                newNode.textContent = text;
+                newNode.style.opacity = 0.6;
+                insertAfter(newNode, node);
+                appendsNodes.push(newNode)
+                console.log('收到翻译文本', id)
+
+                observer.unobserve(node);
+        }
+        const inNode = loadingNode.find(n => n._$id === id);
+        if (inNode) {
+                inNode.remove()
         }
 }
 

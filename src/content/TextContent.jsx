@@ -31,14 +31,10 @@ function Popup(props) {
       }}>
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between',
+ 
           marginBottom:10
         }}>
           <div style={{ fontSize: 16 }}>释义</div>
-          <Button isIconOnly color="danger" aria-label="收藏" size="sm">
-            <HeartIcon />
-          </Button>
-
         </div>
 
         <Textarea

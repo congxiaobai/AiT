@@ -1,6 +1,7 @@
 // import CryptoJS from 'crypto-js';
 import { SparkTTSRecorder } from './SparkConnect';
 import { KimiTTSRecorder } from './KimiConnect';
+import { addFavoriteWords } from './FavoriteWords';
 import TongYiConnect from './TongYiConnect';
 import TongYiWordConnect from './TongYiWordConnect';
 import SparkConnectWord from './SparkConnectWord';
@@ -43,18 +44,19 @@ const TransWordRcord = {
         tongyi: tongyiWordTranslateText,
         spark: sparkWordTranslateText
 }
-async function tongyiWordTranslateText(textArray, tongyiConfig, promtText, sendResponse) {
+async function tongyiWordTranslateText(text, tongyiConfig, promtText, sendResponse) {
 
         try {
-                TongYiWordConnect(textArray, tongyiConfig, promtText, (res) => {
+                TongYiWordConnect(text, tongyiConfig, promtText, (res) => {
                        
                         sendResponse(res)
+                        addFavoriteWords(text,promtText,res)
                         // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
                 }, () => { })
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                return JSON.stringify({ messages: textArray });
+                return JSON.stringify({ messages: text });
         }
 }
 
