@@ -2,11 +2,11 @@ import { Button } from '@nextui-org/react';
 import { sourceLangOptions, aiModalOptions } from '../constant'
 import { Select, SelectItem } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
-import debounce from 'lodash/debounce'
 import Logo from '../../public/arrow.svg?react'
 import SetIcon from '../../public/setting.svg?react'
 import { useEffect, useState } from 'react';
 import { throttle } from 'lodash';
+import React from 'react';
 
 
 const App = () => {
@@ -17,6 +17,7 @@ const App = () => {
   const [text, setText] = useState('');
   const [disabledKeys, setDisabledKeys] = useState([]);
   const [btnLoading, setBtnLoading] = useState(false);
+
   useEffect(() => {
     aiModal && chrome?.storage?.sync.set({
       trans_modal: aiModal
@@ -32,7 +33,7 @@ const App = () => {
     chrome?.storage?.sync?.get(['detecLang'], (items) => {
       setSourceLang(items.detecLang)
     });
-    let disabledKeys = []
+    let disabledKeys: string[] = []
     chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiSecret', 'doubao_apiKey'], (items) => {
       if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
         disabledKeys.push('spark')

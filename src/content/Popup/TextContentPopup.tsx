@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NextUIProvider, Button } from '@nextui-org/react';
-import { HeartIcon } from './icon';
+import { HeartIcon } from '../icon';
 import { Textarea } from "@nextui-org/react";
 function Popup(props) {
   const [content, setContent] = useState('')

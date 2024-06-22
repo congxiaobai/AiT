@@ -8,7 +8,7 @@ export function getWebsocketUrl(apiKey, apiSecret) {
 
         var url = 'wss://' + httpUrl.host + httpUrl.pathname
         var host = location.host
-        var date = new Date().toGMTString()
+        var date = new Date().toUTCString()
         var algorithm = 'hmac-sha256'
         var headers = 'host date request-line'
         var signatureOrigin = `host: ${host}\ndate: ${date}\nGET ${httpUrl.pathname} HTTP/1.1`

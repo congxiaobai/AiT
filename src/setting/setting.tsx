@@ -9,10 +9,10 @@ import {
   CardFooter,
   Link,
 } from '@nextui-org/react';
-import Spark from './Spark';
-import Kimi from './Kimi';
-import TongYi from './TongYi';
-import Words from './Words';
+import Spark from './Cards/Spark';
+import Kimi from './Cards/Kimi';
+import TongYi from './Cards/TongYi';
+import Words from './Cards/Words';
 export default function App() {
   return (
     <div className="px-4 p-12">

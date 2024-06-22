@@ -5,11 +5,11 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSvgr()],
   source: {
     entry: {
-        index: './src/popup/index.jsx',
-        setting: './src/setting/index.tsx',
-        background: './src/background/background.js',
-        content: './src/content/content.jsx',
-      }
+      index: './src/popup/index.tsx',
+      setting: './src/setting/index.tsx',
+      background: './src/background/background.ts',
+      content: './src/content/index.tsx',
+    }
   },
   html: {
     template: './public/index.html',
