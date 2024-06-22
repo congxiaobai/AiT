@@ -1,7 +1,10 @@
 // 导入必要的库，如axios用于发送HTTP请
 const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 
-export default (textArray, config, promtText, onResult, onClose) => {
+export default (promptArray: {
+    role: string,
+    content: string
+}[], config: any, onResult: (res: any) => void) => {
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.tongyi_apiSecret}`, // 使用process.env访问环境变量
@@ -12,19 +15,7 @@ export default (textArray, config, promtText, onResult, onClose) => {
     const body = {
         model: "qwen-turbo",
         input: {
-            messages: [
-                {
-                    role: "system",
-                    content: "你是一个翻译专家。尽量避免对一些术语进行翻译。"
-                },
-                {
-                    role: "user",
-                    content: `下面是一个数组,包含了id和text两个字段。
-                    请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，
-                    保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。
-                    这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。` + `${promtText ? '注意，本文由以下特质，可以参考：' + promtText : ''}` + JSON.stringify(textArray)
-                }
-            ]
+            messages: promptArray
         },
         parameters: {
             incremental_output: true,
@@ -34,10 +25,16 @@ export default (textArray, config, promtText, onResult, onClose) => {
 
 
     fetch(url, { method: 'POST', headers, body: JSON.stringify(body) }).then(response => {
+        if (!response.body) {
+            return
+        }
         const reader = response.body.getReader();
-        let allMessage = [];
+        let allMessage: string[] = [];
 
-        function processStream({ done, value }) {
+        const processStream = ({ done, value }: {
+            done: boolean,
+            value: Uint8Array
+        }): any => {
             // 当没有更多数据时，done为true
             if (done) {
                 console.log('Stream complete');
@@ -84,18 +81,11 @@ export default (textArray, config, promtText, onResult, onClose) => {
             }
 
             // 继续读取流
-            return reader.read().then(processStream);
+            return reader.read().then(processStream as any) ;
         }
-        return reader.read().then(processStream);
+        return reader.read().then(processStream as any);
     }).catch(err => {
         console.log({ err })
     });
-    // axios.post(url, body, { headers})
-    //     .then(response => {
-    //        console.log(response.data)
-    //     })
-    //     .catch(error => {
-    //         console.error('请求出错：', error);
 
-    //     });
 }

@@ -18,7 +18,7 @@ export async function detecLang() {
     chrome.storage.sync.set({ detecLang: detectedLanguage });
 }
 export function generateUUID() {
-    return uniqueId('*&$')
+    return uniqueId('&$')
 }
 
 export function istextNode(node: Node) {

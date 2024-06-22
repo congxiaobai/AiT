@@ -1,5 +1,5 @@
 import { Button } from '@nextui-org/react';
-import { sourceLangOptions, aiModalOptions } from '../constant'
+import { sourceLangOptions, aiModalOptions, ChromeAction } from '../constant'
 import { Select, SelectItem } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
 import Logo from '../../public/arrow.svg?react'
@@ -15,7 +15,7 @@ const App = () => {
   const [aiModal, setAiModal] = useState('')
   const [targetLang, setTargetLang] = useState(preferredLanguage);
   const [text, setText] = useState('');
-  const [disabledKeys, setDisabledKeys] = useState([]);
+  const [disabledKeys, setDisabledKeys] = useState<string[]>([]);
   const [btnLoading, setBtnLoading] = useState(false);
 
   useEffect(() => {
@@ -63,14 +63,13 @@ const App = () => {
         return
       }
       chrome.tabs.sendMessage(tabs[0].id, {
-        action: "translateRequest", payload: {
+        action: ChromeAction.RequestTranslate, payload: {
           sourceLang,
-          promtText: text,
+          promptText: text,
           targetLang,
         }
-      }, response => {
+      }, () => {
         setBtnLoading(true);
-
       });
     });
   }, 200)

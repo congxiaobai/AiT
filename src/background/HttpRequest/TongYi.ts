@@ -3,7 +3,7 @@ import axios from 'axios';
 const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 ;
 
-export default (promptArray: {
+export default async (promptArray: {
     role: string,
     content: string
 }[], config: any, onResult: (res: any) => void) => {
@@ -21,11 +21,8 @@ export default (promptArray: {
         }
     };
 
-    axios.post(url, body, {
+    const response = await axios.post(url, body, {
         headers
-    }).then(response => {
-        onResult(response)
-       
     })
-
+    return response
 }

@@ -87,7 +87,7 @@ export default class PageState {
                 text: node.textContent || '',
             }
         })
-        this.translateWithPipe(toTranslateNode)
+        this.translateWithHttp(toTranslateNode)
 
     }
     // 使用流式HTTP请求
@@ -156,21 +156,23 @@ export default class PageState {
         for (let i = 0; i < unTransNode.length; i += this.batchSize) {
             const batch = unTransNode.slice(i, i + this.batchSize);
             console.log('请求翻译的节点', batch.map(s => s.id).join(';'));
-            chrome.runtime.sendMessage({
-                action: "loading", loading: true
-            })
+            // chrome.runtime.sendMessage({
+            //     action: "loading", loading: true
+            // }, () => { })
             chrome.runtime.sendMessage({
                 action: ChromeAction.TranslateNodeWithHttp,
                 promptText: this.promptText,
                 nodeArray: unTransNode,
-            }, (tranlatedNodeArray) => {
-                chrome.runtime.sendMessage({
-                    action: "loading", loading: false
-                })
-                if (!tranlatedNodeArray) {
+            }, (res) => {
+                console.log({ res })
+                // chrome.runtime.sendMessage({
+                //     action: "loading", loading: false
+                // }, () => { })
+
+                if (!res) {
                     return
                 }
-                tranlatedNodeArray.forEach((item: { id: string, text: string }) => {
+                res.forEach((item: { id: string, text: string }) => {
                     const { id, text } = item;
                     this.addtranslateNode(id, text)
                     const node = this.allTextNodes.find(n => n._$id === id);
@@ -178,9 +180,9 @@ export default class PageState {
                         this.allCacheTextNodes[node.textContent] = text
                     }
                 })
-                chrome?.storage?.sync?.set({
-                    [this.currentURLKey]: this.allCacheTextNodes
-                })
+                // chrome?.storage?.sync?.set({
+                //     [this.currentURLKey]: this.allCacheTextNodes
+                // })
             })
         }
     }

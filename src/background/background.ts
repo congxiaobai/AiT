@@ -3,10 +3,11 @@
 import { LinesTranslate } from './LinesTranslate'
 
 import { WordTranslate } from './WordTranslate'
-import TongYiConnecStream from './Page/TongYiConnecStream'
+import TongYiConnecStream from './PipeRequest/TongYi'
 import { ChromeAction } from '../constant';
 import { BackgroundChromRequestType, LinesRequestType, WordRequestType } from './type';
-import { LinsModalPromotRecord } from './util';
+import { generateLinsModalPromot, generateWordModalPromot } from './util';
+import { LinesTranslatePipe } from './LinesTranslatePipe';
 
 chrome.runtime.onInstalled.addListener(() => {
         chrome.contextMenus.create({
@@ -54,8 +55,10 @@ const TransConfig: {
 //         });
 // });
 
-chrome.runtime.onMessage.addListener(async function (request: BackgroundChromRequestType, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async (request: BackgroundChromRequestType, sender, sendResponse) => {
+    
         if (request.action === ChromeAction.TranslateNodeWithHttp) {
+
                 const nodeArray = (request as LinesRequestType).nodeArray;
                 if (!nodeArray || !nodeArray.length) {
                         sendResponse([])
@@ -66,15 +69,15 @@ chrome.runtime.onMessage.addListener(async function (request: BackgroundChromReq
                         sendResponse([])
                         return
                 }
-                const generate = LinsModalPromotRecord[config.transModal];
-                if (!generate) {
-                        sendResponse([])
-                        return
-                }
-                const promptArray = generate(nodeArray, (request as LinesRequestType).promptText)
-                LinesTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
 
-                return true;
+                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
+                const requestFn = LinesTranslate[config.transModal];
+                await requestFn(promptArray, config.modalConfig, (res) => {
+                        console.log(res)
+                        sendResponse(res)
+                })
+               
+                return;
         } else if (request.action === ChromeAction.TranslateWord) {
                 const wordText = (request as WordRequestType).wordText;
                 if (!wordText) {
@@ -86,42 +89,46 @@ chrome.runtime.onMessage.addListener(async function (request: BackgroundChromReq
                         sendResponse([])
                         return
                 }
-                const generate = LinsModalPromotRecord[config.transModal];
-                if (!generate) {
+                const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText)
+                WordTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
+
+                return true;
+        } else if (request.action === ChromeAction.TranslateNodesWithPipe) {
+                const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+                if (!tabs[0]?.id) {
+                        sendResponse([])
+                        console.error('没有找到activeTabId')
+                        return
+                }
+                const nodeArray = (request as LinesRequestType).nodeArray;
+                if (!nodeArray || !nodeArray.length) {
                         sendResponse([])
                         return
                 }
-                WordTranslate[config.trans_modal](request.text, config.modalConfig, (request as WordRequestType).selectionText, sendResponse)
+                const config = await getModalAndConfig()
+                if (!config) {
+                        sendResponse([])
+                        return
+                }
+                const currentTabId = tabs[0].id;
+                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
 
+                LinesTranslatePipe[config.transModal](promptArray, config.modalConfig, (res) => sendMessageToContent(currentTabId, {
+                        action: ChromeAction.NodeTranslated,
+                        text: JSON.parse(res)
+                }))
+                sendResponse()
                 return true;
-        } else if (request.action === "translateContentWithPipe" && request.text) {
-                chrome?.storage?.sync?.get(['tongyi_apiSecret'], (config) => {
-                        if (config) {
 
-                                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                                        if (tabs.length > 0) {
-                                                const currentTabId = tabs[0].id;
-                                                console.log('currentTabId', currentTabId,)
-                                                TongYiConnecStream(request.text, config, request.promtText, (res) => {
-                                                        sendMessageToContent(currentTabId, {
-                                                                action: 'tarnlatedNode',
-                                                                text: JSON.parse(res)
-                                                        });
-
-                                                })
-                                                // 在这里可以使用currentTabId进行后续操作
-                                        }
-                                });
-
-                        }
-                })
         }
         else {
-                sendResponse()
+                sendResponse(['error1'])
+
+                return
         }
 });
 
-function sendMessageToContent(tabId, message) {
+function sendMessageToContent(tabId: number, message: any) {
         chrome.tabs.sendMessage(tabId, message, function (response) {
                 if (chrome.runtime.lastError) {
                         console.error("Error sending message:", chrome.runtime.lastError.message);
@@ -137,9 +144,9 @@ const getModalAndConfig = async () => {
                 return false
         }
         const configKey = TransConfig[transModal.trans_modal];
-        const modalConfig = chrome?.storage?.sync?.get(configKey)
+        const modalConfig = await chrome?.storage?.sync?.get(configKey)
         if (!modalConfig) {
                 return false
         }
-        return { modalConfig, transModal }
+        return { modalConfig, transModal: transModal.trans_modal }
 }
