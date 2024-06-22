@@ -163,7 +163,7 @@ async function gatherTextNodes(element) {
 
 async function translateInBatches(peddingNode, batchSize) {
         var currentURL = 'cacheNoes&&' + window.location.href;
-        const unTransNode = []
+        let unTransNode = []
         chrome?.storage?.sync?.get([currentURL], (items) => {
                 const allCacheTextNodes = items[currentURL] || {};
                 if (allCacheTextNodes) {

@@ -13,6 +13,7 @@ import Spark from './Spark';
 import Kimi from './Kimi';
 import TongYi from './TongYi';
 import Words from './Words';
+import DouBao from './DouBao';
 export default function App() {
   return (
     <div className="px-4 p-12">
@@ -186,6 +187,62 @@ export default function App() {
                 Excepteur sint occaecat cupidatat non proident, sunt in culpa
                 qui officia deserunt mollit anim id est laborum.
               </CardBody>
+            </Card>
+          </Tab>
+
+          <Tab
+              key="doubao"
+              className="flex-1"
+              title={<div className="p-2">豆包(豆包大模型)</div>}
+          >
+            <Card>
+              <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                <div className="flex flex-col">
+                  <h4 className="text-md">字节跳动出品</h4>
+                  <p className="text-small text-default-500">
+                    指定时间内申请5亿免费token
+                  </p>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <DouBao></DouBao>
+              </CardBody>
+              <Divider className="mt-2 mb-2" />
+              <CardFooter>
+                <div className="flex-col gap-2">
+                  <div> 申请指南</div>
+                  <div className="text-md text-default-500 p-1">
+                    1.{' '}
+                    <Link
+                        href="https://console.volcengine.com/auth/login?redirectURI=%2Fark%2Fregion%3Aark%2Bcn-beijing%2FopenManagement%3Fcurrent%3D1%26pageSize%3D10"
+                        isExternal={true}
+                    >
+                      点击这里
+                    </Link>
+                    进入控制台申请免费5亿token
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    2. <Link
+                      href="https://www.volcengine.com/docs/82379/1099522"
+                      isExternal={true}
+                  >  点击这里
+                  </Link>
+                    创建接入点。
+                  </div>
+
+                  <div className="text-md text-default-500 p-1">
+                    3. <Link
+                      href="https://www.volcengine.com/docs/82379/1263279"
+                      isExternal={true}
+                  >  点击这里
+                  </Link>
+                    获取Api key。
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    4. 将Api key和接入点Id填写到上面的设置中
+                  </div>
+                </div>
+              </CardFooter>
             </Card>
           </Tab>
 

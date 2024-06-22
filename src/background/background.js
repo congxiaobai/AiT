@@ -4,7 +4,9 @@ import { KimiTTSRecorder } from './KimiConnect';
 import { addFavoriteWords } from './FavoriteWords';
 import TongYiConnect from './TongYiConnect';
 import TongYiWordConnect from './TongYiWordConnect';
-import SparkConnectWord from './SparkConnectWord';
+import { SparkTTSRecorder as SparkConnectWord } from './SparkConnectWord';
+import DouBaoConnect from './DouBaoConnect';
+import DouBaoWordConnect from './DouBaoWordConnect';
 chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
         chrome.contextMenus.create({
@@ -31,18 +33,21 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 const TransConfig = {
         kimi: ['kimi_apiKey'],
         spark: ['spark_apiKey', 'spark_apiSecret', 'spark_appId'],
-        tongyi: ['tongyi_apiSecret']
+        tongyi: ['tongyi_apiSecret'],
+        doubao: ['doubao_apiSecret', 'doubao_endpointId'],
 }
 
 const TransRcord = {
         kimi: kimiTranslateText,
         tongyi: tongyiTranslateText,
-        spark: sparkTranslateText
+        spark: sparkTranslateText,
+        doubao: doubaoTranslateText,
 }
 const TransWordRcord = {
         kimi: kimiWordTranslateText,
         tongyi: tongyiWordTranslateText,
-        spark: sparkWordTranslateText
+        spark: sparkWordTranslateText,
+        doubao: doubaoWordTranslateText,
 }
 async function tongyiWordTranslateText(text, tongyiConfig, promtText, sendResponse) {
 
@@ -184,6 +189,48 @@ async function kimiTranslateText(textArray, kimiConfig, promtText, sendResponse)
                 }
                 Record.sendText(batch, promtText)
 
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                return JSON.stringify({ messages: textArray });
+        }
+}
+
+async function doubaoWordTranslateText(text, doubaoConfig, promtText, sendResponse) {
+        try {
+                DouBaoWordConnect(
+                    text,
+                    doubaoConfig,
+                    promtText,
+                    res => {
+                            sendResponse(res);
+                            addFavoriteWords(text, promtText, res);
+                            // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
+                    },
+                    () => {}
+                );
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                return JSON.stringify({ messages: text });
+        }
+}
+
+async function doubaoTranslateText(textArray, doubaoConfig, promtText, sendResponse) {
+        if (!textArray || textArray.length === 0) {
+                sendResponse([]);
+                return;
+        }
+        try {
+                DouBaoConnect(
+                    textArray,
+                    doubaoConfig,
+                    promtText,
+                    res => {
+                            console.log('translateItemCompleted', res.map(s => s.id).join(';'));
+                            sendResponse(res);
+                            // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
+                    },
+                    () => {}
+                );
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 return JSON.stringify({ messages: textArray });
