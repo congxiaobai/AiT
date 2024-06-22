@@ -6,6 +6,7 @@ import debounce from 'lodash/debounce'
 import Logo from '../../public/arrow.svg?react'
 import SetIcon from '../../public/setting.svg?react'
 import { useEffect, useState } from 'react';
+import { throttle } from 'lodash';
 
 
 const App = () => {
@@ -55,7 +56,7 @@ const App = () => {
     setDisabledKeys(disabledKeys)
   }, []);
 
-  const translateRequest = debounce(() => {
+  const translateRequest = throttle(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       if (!tabs[0]) {
         return

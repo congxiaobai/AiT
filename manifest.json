@@ -9,8 +9,6 @@
     "scripting",
     "tabs",
     "storage",
-    "webRequest",
-    "webRequestBlocking",
     "contextMenus"
   ],
   "options_page": "setting.html",

@@ -1,5 +1,4 @@
 // 导入必要的库，如axios用于发送HTTP请
-import axios from 'axios';
 const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 
 export default (textArray, config, promtText, onResult, onClose) => {

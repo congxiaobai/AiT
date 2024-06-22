@@ -6,7 +6,7 @@ export default defineConfig({
   source: {
     entry: {
         index: './src/popup/index.jsx',
-        setting: './src/setting/index.jsx',
+        setting: './src/setting/index.tsx',
         background: './src/background/background.js',
         content: './src/content/content.jsx',
       }

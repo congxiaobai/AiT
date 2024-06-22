@@ -3,7 +3,7 @@ import { Table, TableHeader, TableColumn, Tooltip, CardHeader, TableBody, Spinne
 import { useAsyncList } from "@react-stately/data";
 import { users } from "./data";
 import { DeleteIcon } from './Icon'
-export default function App() {
+export default ()=> {
     const [page, setPage] = React.useState(1);
     const [dataSource, setDataSource] = React.useState(users);
     const rowsPerPage = 10;

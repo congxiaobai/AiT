@@ -12,13 +12,14 @@ let textPopup = null;
 let seselectionText = '';
 let postion = { x: 0, y: 0 }
 import { detecLang, generateUUID, clearChache, gatherTextNodes, insertAfter, getSelctionTextConent } from './util'
-
+const port = chrome.runtime.connect({ name: "content-to-background" });
 if (document.readyState !== 'loading') {
         setTimeout(() => detecLang());
 } else {
         document.addEventListener('DOMContentLoaded', function () {
                 setTimeout(() => detecLang());
                 clearChache();
+
         });
 }
 
@@ -81,6 +82,14 @@ function clearPreData() {
 // 收集所有节点，并观察
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ sucess: true });
+        if (message.action === 'tarnlatedNode') {
+                console.error(message.text);
+                if (!message.text.id) {
+
+                        return
+                }
+                addtranslateNode(message.text.id, message.text.text)
+        }
         if (message.action === 'translateRequest') {
                 promtText = message.payload.promtText;
                 if (allTextNodes.length > 0) {
@@ -125,8 +134,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-
-
 async function translateInBatches(peddingNode, batchSize) {
         var currentURL = 'cacheNoes&&' + window.location.href;
         let unTransNode = []
@@ -144,60 +151,66 @@ async function translateInBatches(peddingNode, batchSize) {
                 } else {
                         unTransNode = peddingNode
                 }
-                for (let i = 0; i < unTransNode.length; i += batchSize) {
-                        const batch = unTransNode.slice(i, i + batchSize);
-                        console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
-                        chrome.runtime.sendMessage({
-                                action: "loading", loading: true
-                        })
-                        chrome.runtime.sendMessage({
-                                action: "translateContent",
-                                promtText: promtText,
-                                text: batch.map(node => {
-                                        node._$translate = 'doing';
-                                        const newNode = document.createElement('p')
-                                        newNode._$id = node._$id
-                                        newNode.classList.add('translate_loading')
-                                        newNode.style.opacity = 0.6;
-                                        insertAfter(newNode, node)
-                                        loadingNode.push(newNode)
-                                        return {
-                                                id: node._$id,
-                                                text: node.textContent,
-                                        }
-                                })
-                        }, (res) => {
-                                console.log('翻译后的节点', res.map(s => s.id).join(';'));
-                                chrome.runtime.sendMessage({
-                                        action: "loading", loading: false
-                                })
-                                if (Array.isArray(res)) {
-                                        const newCacheNodes = {}
-                                        res.forEach(item => {
-                                                const { id, text } = item;
-                                                addtranslateNode(id, text)
-                                                const node = allTextNodes.find(n => n._$id === id);
-                                                if (node) {
-                                                        newCacheNodes[node.textContent] = text
-                                                }
-                                        })
-                                        chrome?.storage?.sync?.get([currentURL], (items) => {
-                                                const newValue = {
-                                                        ...(items[currentURL] || {}),
-                                                        ...newCacheNodes,
-                                                        '&chche&time': Date.now()
-                                                }
-                                                chrome?.storage?.sync?.set(currentURL, newValue)
-                                        })
-                                }
-                        })
-                }
+                StreamWithTabId(unTransNode)
+
+                // StreamTranslate(unTransNode, '')
+                // for (let i = 0; i < unTransNode.length; i += batchSize) {
+                //         const batch = unTransNode.slice(i, i + batchSize);
+                //         console.log('请求翻译的节点', batch.map(s => s._$id).join(';'));
+                //         chrome.runtime.sendMessage({
+                //                 action: "loading", loading: true
+                //         })
+                //         chrome.runtime.sendMessage({
+                //                 action: "translateContent",
+                //                 promtText: promtText,
+                //                 text: batch.map(node => {
+                //                         node._$translate = 'doing';
+                //                         const newNode = document.createElement('p')
+                //                         newNode._$id = node._$id
+                //                         newNode.classList.add('translate_loading')
+                //                         newNode.style.opacity = 0.6;
+                //                         insertAfter(newNode, node)
+                //                         loadingNode.push(newNode)
+                //                         return {
+                //                                 id: node._$id,
+                //                                 text: node.textContent,
+                //                         }
+                //                 })
+                //         }, (res) => {
+                //                 console.log('翻译后的节点', res.map(s => s.id).join(';'));
+                //                 chrome.runtime.sendMessage({
+                //                         action: "loading", loading: false
+                //                 })
+                //                 if (Array.isArray(res)) {
+                //                         const newCacheNodes = {}
+                //                         res.forEach(item => {
+                //                                 const { id, text } = item;
+                //                                 addtranslateNode(id, text)
+                //                                 const node = allTextNodes.find(n => n._$id === id);
+                //                                 if (node) {
+                //                                         newCacheNodes[node.textContent] = text
+                //                                 }
+                //                         })
+                //                         chrome?.storage?.sync?.get([currentURL], (items) => {
+                //                                 const newValue = {
+                //                                         ...(items[currentURL] || {}),
+                //                                         ...newCacheNodes,
+                //                                         '&chche&time': Date.now()
+                //                                 }
+                //                                 chrome?.storage?.sync?.set(currentURL, newValue)
+                //                         })
+                //                 }
+                //         })
+                // }
+
+
         });
 
 }
 function addtranslateNode(id, text) {
         const node = allTextNodes.find(n => n._$id === id);
-        if (node) {
+
+        if (node && node._$translate !== 'done') {
                 node._$translate = 'done';
                 const newNode = node.cloneNode(true);
                 newNode.textContent = text;
@@ -214,9 +227,64 @@ function addtranslateNode(id, text) {
         }
 }
 
+function StreamTranslate(batch, promtText) {
+        // contentScript.js
+
+        port.postMessage(
+                {
+                        action: "translateContent",
+                        promtText: promtText,
+                        text: batch.map(node => {
+                                node._$translate = 'doing';
+                                const newNode = document.createElement('p')
+                                newNode._$id = node._$id
+                                newNode.classList.add('translate_loading')
+                                newNode.style.opacity = 0.6;
+                                insertAfter(newNode, node)
+                                loadingNode.push(newNode)
+                                return {
+                                        id: node._$id,
+                                        text: node.textContent,
+                                }
+                        })
+                }
+
+        );
+
+        port.onMessage.addListener(function (message) {
+                console.error(message);
+                if (!message.id) {
+
+                        return
+                }
+                addtranslateNode(message.id, message.text)
+
+        });
+}
 
 
+function StreamWithTabId(batch, activeId) {
+        chrome.runtime.sendMessage({
+                action: "translateContentWithPipe",
+                promtText: promtText,
 
+                text: batch.map(node => {
+                        node._$translate = 'doing';
+                        const newNode = document.createElement('p')
+                        newNode._$id = node._$id
+                        newNode.classList.add('translate_loading')
+                        newNode.style.opacity = 0.6;
+                        insertAfter(newNode, node)
+                        loadingNode.push(newNode)
+                        return {
+                                id: node._$id,
+                                text: node.textContent,
+                        }
+                })
+        }, () => {
+
+        })
+}
 
 
 
