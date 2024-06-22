@@ -12,6 +12,7 @@ import {
 import Spark from './Spark';
 import Kimi from './Kimi';
 import TongYi from './TongYi';
+import Words from './Words';
 export default function App() {
   return (
     <div className="px-4 p-12">
@@ -150,7 +151,7 @@ export default function App() {
                     申请账号
                   </div>
                   <div className="text-md text-default-500 p-1">
-                  2. <Link
+                    2. <Link
                       href="https://dashscope.console.aliyun.com/model?spm=5176.28630291.0.0.24bf7eb5MIecU5
                       "
                       isExternal={true}
@@ -158,7 +159,7 @@ export default function App() {
                     </Link>
                     进入控制台，在左侧菜单栏里选择模型广场，选择申请体验'通义千问'，领取免费token。
                   </div>
-     
+
                   <div className="text-md text-default-500 p-1">
                     3. 点击左侧面板，'API-KEY管理'生成API Key。
                   </div>
@@ -185,6 +186,16 @@ export default function App() {
                 Excepteur sint occaecat cupidatat non proident, sunt in culpa
                 qui officia deserunt mollit anim id est laborum.
               </CardBody>
+            </Card>
+          </Tab>
+
+          <Tab
+            key="words"
+            className="flex-1"
+            title={<div className="p-2">单词本</div>}
+          >
+            <Card>
+              <Words></Words>
             </Card>
           </Tab>
         </Tabs>

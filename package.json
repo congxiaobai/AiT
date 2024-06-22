@@ -9,7 +9,8 @@
     "preview": "rsbuild preview"
   },
   "dependencies": {
-    "@nextui-org/react": "^2.4.0",
+    "@nextui-org/react": "^2.4.2",
+    "@react-stately/data": "^3.11.4",
     "axios": "^1.7.2",
     "crypto-js": "^4.2.0",
     "lodash": "^4.17.21",
