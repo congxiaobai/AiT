@@ -1,14 +1,14 @@
 // import CryptoJS from 'crypto-js';
 
-import { PageTranslate } from './PageTranslate'
+import { LinesTranslate } from './LinesTranslate'
 
 import { WordTranslate } from './WordTranslate'
 import TongYiConnecStream from './Page/TongYiConnecStream'
 import { ChromeAction } from '../constant';
 import { BackgroundChromRequestType, LinesRequestType, WordRequestType } from './type';
+import { LinsModalPromotRecord } from './util';
 
 chrome.runtime.onInstalled.addListener(() => {
-        console.log('Extension installed and running.');
         chrome.contextMenus.create({
                 id: 'myExtensionContextMenu',
                 title: '翻译',
@@ -66,7 +66,13 @@ chrome.runtime.onMessage.addListener(async function (request: BackgroundChromReq
                         sendResponse([])
                         return
                 }
-                PageTranslate[config.transModal](nodeArray, config.modalConfig, (request as LinesRequestType).promptText, sendResponse)
+                const generate = LinsModalPromotRecord[config.transModal];
+                if (!generate) {
+                        sendResponse([])
+                        return
+                }
+                const promptArray = generate(nodeArray, (request as LinesRequestType).promptText)
+                LinesTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
 
                 return true;
         } else if (request.action === ChromeAction.TranslateWord) {
@@ -77,6 +83,11 @@ chrome.runtime.onMessage.addListener(async function (request: BackgroundChromReq
                 }
                 const config = await getModalAndConfig()
                 if (!config) {
+                        sendResponse([])
+                        return
+                }
+                const generate = LinsModalPromotRecord[config.transModal];
+                if (!generate) {
                         sendResponse([])
                         return
                 }

@@ -1,77 +1,56 @@
-import TongYiWordConnect from './Words/TongYiWordConnect';
-import SparkConnectWord from './Words/SparkConnectWord';
-import { addFavoriteWords } from './FavoriteWords';
 
-export const WordTranslate = {
-        kimi: kimiWordTranslateText,
-        tongyi: tongyiWordTranslateText,
-        spark: sparkWordTranslateText
+import TongYiConnect from './HttpRequest/TongYi';
+import { generateWs } from './HttpRequest/Spark';
+import KimiConnect from './HttpRequest/Kimi';
+export const WordTranslate: {
+        [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
+} = {
+        tongyi: tongyiTranslate,
+        spark: sparkTranslate,
+        kimi: kimiTranslate,
 }
-async function kimiWordTranslateText(textArray, kimiConfig, promtText, sendResponse) {
-        if (!textArray || textArray.length === 0) {
-                return
-        }
+
+async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                let Record = new KimiTTSRecorder(kimiConfig);
-                Record.onEnd = () => {
-                        Record.setStatus('close')
-                }
-                Record.onResult = (res) => {
-                        try {
-                                let payload = JSON.parse(res)
-                                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                                        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] }, () => {
-
-                                        });
-                                })
-                        } catch {
-
+                const onResult = (response: any) => {
+                        if (response?.data?.output?.choices) {
+                                const allRes = response.data.output.choices.map(s => s.message?.content).join('')
+                                sendResponse(allRes)
+                        } else {
+                                sendResponse([])
                         }
-
                 }
-                Record.sendText(batch, promtText)
+                TongYiConnect(promptArray, config, onResult)
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                return JSON.stringify({ messages: textArray });
+                return
         }
 }
 
-async function sparkWordTranslateText(textArray, sparkConfig, promtText, sendResponse) {
+async function sparkTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                let WebConnect = new SparkConnectWord(sparkConfig);
-                WebConnect.onEnd = (allRes) => {
-                        sendResponse(allRes)
+                const allRes: any = [];
+                const onEnd = () => sendResponse(allRes)
+                const onMessage = (tmp: string) => {
+                        allRes.push(tmp)
                 }
-                WebConnect.onResult = (res) => {
-
-                }
-                WebConnect.onOpen = () => {
-                        if (textArray.length > 0) {
-                                WebConnect.webSocketSend(textArray, promtText);
-                        }
-                }
-                WebConnect.start()
-
-
+                await generateWs(promptArray, config, onEnd, onMessage)
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 sendResponse()
-                return JSON.stringify({ messages: textArray });
+                return
         }
 }
 
-async function tongyiWordTranslateText(text, tongyiConfig, promtText, sendResponse) {
+
+async function kimiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                TongYiWordConnect(text, tongyiConfig, promtText, (res) => {
-
-                        sendResponse(res)
-                        addFavoriteWords(text, promtText, res)
-                        // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
-                }, () => { })
-
+                const onEnd = (res: any) => sendResponse(res)
+                await KimiConnect(promptArray, config, onEnd)
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                return JSON.stringify({ messages: text });
+                sendResponse()
+                return
         }
 }

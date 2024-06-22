@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './Setting';
+import App from './main';
 import { NextUIProvider } from '@nextui-org/react';
 import './index.css'
 import { ToastProvider } from 'tw-noti';
