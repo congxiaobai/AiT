@@ -2,7 +2,7 @@ import CryptoJS from 'crypto-js';
 let httpUrl = new URL("https://spark-api.xf-yun.com/v3.5/chat");
 let modelDomain = "generalv3.5"; // V3.5
 
-export function getWebsocketUrl(apiKey,apiSecret) {
+export function getWebsocketUrl(apiKey, apiSecret) {
 
     return new Promise((resolve, reject) => {
 
@@ -38,13 +38,13 @@ export class SparkTTSRecorder {
     }
 
     //s
-    setActiveTabID(activeTabId){
+    setActiveTabID(activeTabId) {
         this.activeTabId = activeTabId
     }
     // 连接websocket
     connectWebSocket() {
         this.setStatus('ttsing')
-        return getWebsocketUrl(this.spark_apiKey,this.spark_apiSecret).then(url => {
+        return getWebsocketUrl(this.spark_apiKey, this.spark_apiSecret).then(url => {
             let ttsWS = new WebSocket(url)
             this.ttsWS = ttsWS
             ttsWS.onopen = e => {
@@ -79,7 +79,7 @@ export class SparkTTSRecorder {
             }, "payload": {
                 "message": {
                     "text": [{
-                        "role": "user", "content":`请分析“` + `${promtText ? promtText+'”这句话中的' : ''}` + text+`的词义和用法。尽量简略一点。`
+                        "role": "user", "content": `请分析“` + `${promtText ? promtText + '”这句话中的' : ''}` + text + `的词义和用法。尽量简略一点。`
                     }]
                 }
             }
@@ -105,7 +105,7 @@ export class SparkTTSRecorder {
         }
         if (jsonData.header.code === 0 && jsonData.header.status === 2) {
             this.ttsWS.close()
-            this.onEnd && this.onEnd( this.total_res.join(''))
+            this.onEnd && this.onEnd(this.total_res.join(''))
         }
     }
 }

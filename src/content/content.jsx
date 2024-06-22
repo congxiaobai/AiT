@@ -11,7 +11,7 @@ let promtText = ''
 let textPopup = null;
 let seselectionText = '';
 let postion = { x: 0, y: 0 }
-import { detecLang, generateUUID, istextNode, isElementNode, insertAfter, getSelctionTextConent } from './util'
+import { detecLang, generateUUID, clearChache, gatherTextNodes, insertAfter, getSelctionTextConent } from './util'
 
 if (document.readyState !== 'loading') {
         setTimeout(() => detecLang());
@@ -21,25 +21,7 @@ if (document.readyState !== 'loading') {
                 clearChache();
         });
 }
-function clearChache() {
-        chrome.storage.sync.get(null, function (items) {
-                if (chrome.runtime.lastError) {
-                        console.error('Error getting items: ' + chrome.runtime.lastError);
-                } else {
-                        console.log('All stored items:', items);
-                        // 这里可以遍历items对象来处理每个存储的键值对
-                        for (var key in items) {
-                                if (key.startsWith('cacheNoes&&') && items.hasOwnProperty(key)) {
-                                        const value = items[key]['&chche&time'];
-                                        //清除超过1天的缓存
-                                        if (value && Date.now() - value > 24 * 60 * 60 * 1000) {
-                                                chrome.storage.sync.remove('key')
-                                        }
-                                }
-                        }
-                }
-        });
-}
+
 document.addEventListener('mouseup', function (event) {
         var text = window.getSelection().toString()?.trim();
         if (text) {
@@ -104,8 +86,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 if (allTextNodes.length > 0) {
                         clearPreData();
                 } else {
-                        gatherTextNodes(document.body).then(() => {
-                                console.log('收集到的节点', allTextNodes.map(s => s.textContent))
+                        gatherTextNodes(document.body, allTextNodes).then(() => {
+
                                 allTextNodes.forEach((s, index) => {
                                         observer.observe(s)
                                         s._$sortIndex = index
@@ -142,28 +124,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
 });
 
-async function gatherTextNodes(element) {
-        const childNodes = Array.from(element.childNodes);
-        for (let node of childNodes) {
-                if (istextNode(node)) {
-                        // 去掉单一的
-                        if (!node.textContent.trim().includes(" ")) {
-                                continue;
-                        }
-                        let id = generateUUID();
-                        node._$id = id;
-                        node._$translate = 'todo'
-                        allTextNodes.push(node)
-                } else if (isElementNode(node)) {
-                        await gatherTextNodes(node);
-                }
-        }
-}
+
 
 
 async function translateInBatches(peddingNode, batchSize) {
         var currentURL = 'cacheNoes&&' + window.location.href;
-        const unTransNode = []
+        let unTransNode = []
         chrome?.storage?.sync?.get([currentURL], (items) => {
                 const allCacheTextNodes = items[currentURL] || {};
                 if (allCacheTextNodes) {

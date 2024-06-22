@@ -45,3 +45,42 @@ export function getSelctionTextConent(node) {
     return ''
 
 }
+
+export async function gatherTextNodes(element,allTextNodes) {
+    const childNodes = Array.from(element.childNodes);
+    for (let node of childNodes) {
+            if (istextNode(node)) {
+                    // 去掉单一的
+                    if (!node.textContent.trim().includes(" ")) {
+                            continue;
+                    }
+                    let id = generateUUID();
+                    node._$id = id;
+                    node._$translate = 'todo'
+                    allTextNodes.push(node)
+            } else if (isElementNode(node)) {
+                    await gatherTextNodes(node,allTextNodes);
+            }
+    }
+}
+
+
+function clearChache() {
+    chrome.storage.sync.get(null, function (items) {
+            if (chrome.runtime.lastError) {
+                    console.error('Error getting items: ' + chrome.runtime.lastError);
+            } else {
+                    console.log('All stored items:', items);
+                    // 这里可以遍历items对象来处理每个存储的键值对
+                    for (var key in items) {
+                            if (key.startsWith('cacheNoes&&') && items.hasOwnProperty(key)) {
+                                    const value = items[key]['&chche&time'];
+                                    //清除超过1天的缓存
+                                    if (value && Date.now() - value > 24 * 60 * 60 * 1000) {
+                                            chrome.storage.sync.remove('key')
+                                    }
+                            }
+                    }
+            }
+    });
+}
