@@ -3,13 +3,13 @@ import React from 'react';
 import { getSelctionTextConent } from "../util";
 import TextContent from './TextContentPopup';
 
-let seselectionText = ''
+let selectionText = ''
 let textPopup: Element | null = null;
 let postion = { x: 0, y: 0 }
 document.addEventListener('mouseup', function (event) {
     var text = window.getSelection()?.toString()?.trim() || '';
     if (text && event.target) {
-        seselectionText = getSelctionTextConent(event.target as any);
+        selectionText = getSelctionTextConent(event.target as any);
         postion = {
             x: event.clientX,
             y: event.clientY
@@ -24,12 +24,12 @@ document.addEventListener('mousedown', function () {
     }
 });
 
-export function createselectionTextPopup(pendingText: string) {
-    if (!pendingText) {
+export function createselectionTextPopup(wordText: string) {
+    if (!wordText) {
         return
     }
 
-    console.log({ pendingText, seselectionText });
+    console.log({ wordText, selectionText });
 
     textPopup = document.createElement('div');
     textPopup.addEventListener('mousedown', (e) => {
@@ -37,17 +37,15 @@ export function createselectionTextPopup(pendingText: string) {
         e.stopImmediatePropagation()
     })
     textPopup.id = 'react-popup';
-    (textPopup as any).style = {
-        position: 'absolute',
-        left: postion.x + 'px',
-        top: postion.y + 'px',
-        zIndex: 1000
-    };
+    (textPopup as any).style.position ='absolute';
+    (textPopup as any).style.left = postion.x + 'px';
+    (textPopup as any).style.top =postion.y + 'px';
+    (textPopup as any).style.zIndex =1000
     document.body.appendChild(textPopup);
     const root = ReactDOM.createRoot(textPopup);
 
     root.render(
-        React.createElement(TextContent, { text: pendingText, seselectionText }),
+        React.createElement(TextContent, { wordText: wordText, selectionText }),
     );
 
 }

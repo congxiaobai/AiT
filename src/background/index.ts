@@ -23,7 +23,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // 监听上下文菜单项的点击事件
 chrome.contextMenus.onClicked.addListener((info, tab) => {
         if (info.menuItemId === 'myExtensionContextMenu' && tab) {
-                tab.id && chrome.tabs.sendMessage(tab.id, { action: 'contextMenuClicked', selectionText: info.selectionText });
+                tab.id && chrome.tabs.sendMessage(tab.id, { action: ChromeAction.ContextMenuClicked, payload: { wordText: info.selectionText } });
         }
 });
 
@@ -87,9 +87,11 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                 return
                         }
                         const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText)
-                        WordTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
+                        WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
+                                console.log(res)
+                                sendResponse(res)
+                        })
                 })
-
 
                 return true;
 
@@ -112,7 +114,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                         return
                                 }
                                 const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
-                                WordTranslate[config.transModal](promptArray, config.modalConfig, (res) => sendMessageToContent(currentTabId, {
+                                LinesTranslatePipe[config.transModal](promptArray, config.modalConfig, (res) => sendMessageToContent(currentTabId, {
                                         action: ChromeAction.NodeTranslated,
                                         text: JSON.parse(res)
                                 }))

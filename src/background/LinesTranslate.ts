@@ -14,9 +14,7 @@ export const LinesTranslate: {
 
 async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                const response = await TongYiConnect(promptArray, config, () => {
-
-                })
+                const response = await TongYiConnect(promptArray, config)
               
                 if (response?.data?.output?.choices) {
                         const allRes = response.data.output.choices.map(s => s.message?.content).join('')

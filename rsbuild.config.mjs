@@ -7,7 +7,7 @@ export default defineConfig({
     entry: {
       index: './src/popup/index.tsx',
       setting: './src/setting/index.tsx',
-      background: './src/background/background.ts',
+      background: './src/background/index.ts',
       content: './src/content/index.ts',
     }
   },

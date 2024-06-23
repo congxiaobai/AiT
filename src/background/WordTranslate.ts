@@ -12,16 +12,15 @@ export const WordTranslate: {
 
 async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                const onResult = (response: any) => {
-                        if (response?.data?.output?.choices) {
-                                const allRes = response.data.output.choices.map(s => s.message?.content).join('')
-                                sendResponse(allRes)
-                        } else {
-                                sendResponse([])
-                        }
-                }
-                TongYiConnect(promptArray, config, onResult)
+                const response = await TongYiConnect(promptArray, config);
 
+                if (response?.data?.output?.choices) {
+                        const allRes = response.data.output.choices.map(s => s.message?.content).join('')
+                        sendResponse(allRes)
+
+                } else {
+                        sendResponse([])
+                }
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 return

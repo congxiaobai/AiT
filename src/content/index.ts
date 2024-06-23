@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((message: {
         }
         // 处理右键菜单
         else if (message.action === ChromeAction.ContextMenuClicked) {
-                var text = (message.payload as MenuContentType).selectionText
+                var text = (message.payload as MenuContentType).wordText
                 createselectionTextPopup(text)
         }
 

@@ -22,5 +22,5 @@ export type NodeTranslatedNodeType = {
 
 export type MenuContentType = {
 
-    selectionText: string
+    wordText: string
 }

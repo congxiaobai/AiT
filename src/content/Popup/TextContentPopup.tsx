@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { NextUIProvider, Button } from '@nextui-org/react';
-import { HeartIcon } from '../icon';
+import { NextUIProvider, } from '@nextui-org/react';
 import { Textarea } from "@nextui-org/react";
-function Popup(props) {
+import { ChromeAction } from '../../constant';
+function Popup(props: {
+  selectionText: string,
+  wordText: string
+}) {
   const [content, setContent] = useState('')
   useEffect(() => {
 
-    if (props.text) {
-      props.seselectionText
-
+    if (props.wordText) {
       chrome.runtime.sendMessage({
-        action: "translateWordContent",
-        promtText: props.seselectionText,
-        text: props.text,
-      }, (res) => {
-        console.log({ translateWordContent: res })
-        setContent(res)
-      }
+        action: ChromeAction.TranslateWord,
+        selectionText: props.selectionText,
+        wordText: props.wordText,
+         }, (res) => {
+            console.log({ translateWordContent: res })
+            setContent(res)
+          }
       )
     }
 
-  }, [props.text]);
+  }, [props.wordText]);
   return (
     <NextUIProvider>
       <div style={{
@@ -31,8 +32,8 @@ function Popup(props) {
       }}>
         <div style={{
           display: 'flex',
- 
-          marginBottom:10
+
+          marginBottom: 10
         }}>
           <div style={{ fontSize: 16 }}>释义</div>
         </div>

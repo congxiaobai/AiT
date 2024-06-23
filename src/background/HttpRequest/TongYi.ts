@@ -6,7 +6,7 @@ const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation
 export default async (promptArray: {
     role: string,
     content: string
-}[], config: any, onResult: (res: any) => void) => {
+}[], config: any) => {
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.tongyi_apiSecret}`,
