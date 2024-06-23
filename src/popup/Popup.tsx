@@ -23,12 +23,12 @@ const App = () => {
       trans_modal: aiModal
     })
   }, [aiModal])
-  chrome.runtime.onMessage.addListener(function (request, sender,) {
-    if (request.action === "loading") {
-      setBtnLoading(request.loading);
-    }
-    return true;
-  });
+  // chrome.runtime.onMessage.addListener(function (request, sender,) {
+  //   if (request.action === "loading") {
+  //     setBtnLoading(request.loading);
+  //   }
+  //   return true;
+  // });
   useEffect(() => {
     chrome?.storage?.sync?.get(['detecLang'], (items) => {
       setSourceLang(items.detecLang)
@@ -37,13 +37,13 @@ const App = () => {
     chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiSecret', 'doubao_apiKey'], (items) => {
       if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
         disabledKeys.push('spark')
-      } else if (!items.kimi_apiKey) {
+      } if (!items.kimi_apiKey) {
         disabledKeys.push('kimi')
       }
-      else if (!items.tongyi_apiSecret) {
+      if (!items.tongyi_apiSecret) {
         disabledKeys.push('tongyi')
       }
-      else if (!items.doubao_apiKey) {
+      if (!items.doubao_apiKey) {
         disabledKeys.push('doubao')
       }
 
@@ -74,7 +74,7 @@ const App = () => {
     });
   }, 200)
   return (
-    <div className=" flex flex-col gap-8  justify-center">
+    <div className=" flex flex-col gap-4  justify-center">
       <div className='flex gap-2 justify-center items-center' >
         <Select
           items={sourceLangOptions} size="sm"
@@ -114,14 +114,20 @@ const App = () => {
         className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
         翻译
       </Button>
-      <div>
-        <Button isIconOnly className='bg-white' size='sm' onClick={() => {
+      <div className='flex gap-2 flex-row-reverse'>
+        <Button isIconOnly className='bg-gray-300' size='sm' onClick={() => {
           chrome.runtime.openOptionsPage(function () {
             console.log('Options page opened.');
           });
         }}>
           <SetIcon className="w-4 h-4" />
         </Button>
+        <Button size='sm' color='primary' onClick={() => {
+          chrome.tabs.create({ url: 'chrome-extension://pbkjpicoggbcapencpgffcomimghdkpc/wordsheet.html' });
+        }}>
+          单词本
+        </Button>
+
       </div>
     </div>
   );

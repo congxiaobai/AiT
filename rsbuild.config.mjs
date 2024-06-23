@@ -9,6 +9,7 @@ export default defineConfig({
       setting: './src/setting/index.tsx',
       background: './src/background/index.ts',
       content: './src/content/index.ts',
+      wordsheet: './src/Wordsheet/index.tsx',
     }
   },
   html: {

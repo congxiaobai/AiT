@@ -3,7 +3,7 @@ import { Table, TableHeader, TableColumn, Tooltip, CardHeader, TableBody, Spinne
 import { useAsyncList } from "@react-stately/data";
 import { users } from "./data";
 import { DeleteIcon } from './Icon'
-export default ()=> {
+export default () => {
     const [page, setPage] = React.useState(1);
     const [dataSource, setDataSource] = React.useState(users);
     const rowsPerPage = 10;
@@ -18,7 +18,7 @@ export default ()=> {
             </Button>
         }
         return cellValue;
-    })
+    }, [])
     const pages = Math.ceil(dataSource.length / rowsPerPage);
 
     const items = React.useMemo(() => {
@@ -50,13 +50,13 @@ export default ()=> {
         },
     });
     return (
-        <>
-            <CardHeader>
-                <div className="flex gap-2">
-                    <Button color="primary">刷新</Button>
-                    <Button color="success">导出为excel</Button>
-                </div>
-            </CardHeader>
+        <div className="p-4">
+
+            <div className="flex gap-2">
+                <Button color="primary">刷新</Button>
+                <Button color="success">导出为excel</Button>
+            </div>
+
             <Table
                 aria-label="Example table with client side pagination"
                 sortDescriptor={list.sortDescriptor}
@@ -94,6 +94,6 @@ export default ()=> {
                     )}
                 </TableBody>
             </Table>
-        </>
+        </div>
     );
 }

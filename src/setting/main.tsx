@@ -12,7 +12,6 @@ import {
 import Spark from './Cards/Spark';
 import Kimi from './Cards/Kimi';
 import TongYi from './Cards/TongYi';
-import Words from './Cards/Words';
 export default function App() {
   return (
     <div className="px-4 p-12">
@@ -186,16 +185,6 @@ export default function App() {
                 Excepteur sint occaecat cupidatat non proident, sunt in culpa
                 qui officia deserunt mollit anim id est laborum.
               </CardBody>
-            </Card>
-          </Tab>
-
-          <Tab
-            key="words"
-            className="flex-1"
-            title={<div className="p-2">单词本</div>}
-          >
-            <Card>
-              <Words></Words>
             </Card>
           </Tab>
         </Tabs>
