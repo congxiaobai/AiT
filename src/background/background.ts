@@ -55,76 +55,73 @@ const TransConfig: {
 //         });
 // });
 
-chrome.runtime.onMessage.addListener(async (request: BackgroundChromRequestType, sender, sendResponse) => {
-    
+chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sender, sendResponse) => {
         if (request.action === ChromeAction.TranslateNodeWithHttp) {
-
                 const nodeArray = (request as LinesRequestType).nodeArray;
                 if (!nodeArray || !nodeArray.length) {
                         sendResponse([])
                         return
                 }
-                const config = await getModalAndConfig()
-                if (!config) {
-                        sendResponse([])
-                        return
-                }
-
-                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
-                const requestFn = LinesTranslate[config.transModal];
-                await requestFn(promptArray, config.modalConfig, (res) => {
-                        console.log(res)
-                        sendResponse(res)
+                getModalAndConfig((config: any) => {
+                        if (!config) {
+                                sendResponse([])
+                                return
+                        }
+                        const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
+                        const requestFn = LinesTranslate[config.transModal];
+                        requestFn(promptArray, config.modalConfig, (res: any) => {
+                                console.log(res)
+                                sendResponse(res)
+                        })
                 })
-               
-                return;
+                return true;
         } else if (request.action === ChromeAction.TranslateWord) {
                 const wordText = (request as WordRequestType).wordText;
                 if (!wordText) {
                         sendResponse([])
                         return
                 }
-                const config = await getModalAndConfig()
-                if (!config) {
-                        sendResponse([])
-                        return
-                }
-                const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText)
-                WordTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
+                getModalAndConfig((config: any) => {
+                        if (!config) {
+                                sendResponse([])
+                                return
+                        }
+                        const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText)
+                        WordTranslate[config.transModal](promptArray, config.modalConfig, sendResponse)
+                })
+
 
                 return true;
+
         } else if (request.action === ChromeAction.TranslateNodesWithPipe) {
-                const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-                if (!tabs[0]?.id) {
-                        sendResponse([])
-                        console.error('没有找到activeTabId')
-                        return
-                }
                 const nodeArray = (request as LinesRequestType).nodeArray;
                 if (!nodeArray || !nodeArray.length) {
                         sendResponse([])
                         return
                 }
-                const config = await getModalAndConfig()
-                if (!config) {
-                        sendResponse([])
-                        return
-                }
-                const currentTabId = tabs[0].id;
-                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
-
-                LinesTranslatePipe[config.transModal](promptArray, config.modalConfig, (res) => sendMessageToContent(currentTabId, {
-                        action: ChromeAction.NodeTranslated,
-                        text: JSON.parse(res)
-                }))
-                sendResponse()
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                        const currentTabId = tabs[0].id;
+                        if (!currentTabId) {
+                                sendResponse([])
+                                console.error('没有找到activeTabId')
+                                return
+                        }
+                        getModalAndConfig((config: any) => {
+                                if (!config) {
+                                        sendResponse([])
+                                        return
+                                }
+                                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
+                                WordTranslate[config.transModal](promptArray, config.modalConfig, (res) => sendMessageToContent(currentTabId, {
+                                        action: ChromeAction.NodeTranslated,
+                                        text: JSON.parse(res)
+                                }))
+                        })
+                })
                 return true;
-
         }
         else {
                 sendResponse(['error1'])
-
-                return
         }
 });
 
@@ -138,15 +135,19 @@ function sendMessageToContent(tabId: number, message: any) {
         });
 }
 
-const getModalAndConfig = async () => {
-        const transModal = await chrome?.storage?.sync?.get(['trans_modal']) as any;
-        if (!transModal.trans_modal) {
-                return false
-        }
-        const configKey = TransConfig[transModal.trans_modal];
-        const modalConfig = await chrome?.storage?.sync?.get(configKey)
-        if (!modalConfig) {
-                return false
-        }
-        return { modalConfig, transModal: transModal.trans_modal }
+const getModalAndConfig = (callback: Function) => {
+        chrome?.storage?.sync?.get(['trans_modal'], (transModal) => {
+                if (!transModal.trans_modal) {
+                        callback(false);
+                        return
+                }
+                const configKey = TransConfig[transModal.trans_modal];
+                chrome?.storage?.sync?.get(configKey, (modalConfig) => {
+                        if (!modalConfig) {
+                                callback(false);
+                                return false
+                        }
+                        callback({ modalConfig, transModal: transModal.trans_modal })
+                })
+        }) as any;
 }
