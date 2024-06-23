@@ -1,17 +1,49 @@
 import React from "react";
-import { Table, TableHeader, TableColumn, Tooltip, CardHeader, TableBody, Spinner, TableRow, TableCell, Pagination, Button } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, Input, TableBody, Spinner, TableRow, TableCell, Pagination, Button, SortDescriptor } from "@nextui-org/react";
 import { useAsyncList } from "@react-stately/data";
 import { users } from "./data";
 import { DeleteIcon } from './Icon'
+import { exportToExcel } from "./utils";
+import { orderBy } from "lodash";
 export default () => {
     const [page, setPage] = React.useState(1);
+    const [params, setParams] = React.useState({
+        word: '',
+        line: ''
+    });
+    const ref = React.useRef(users);
     const [dataSource, setDataSource] = React.useState(users);
+    const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
     const rowsPerPage = 10;
     const [isLoading, setIsLoading] = React.useState(false);
+
+    const deleteRow = (rowData) => {
+        let newData = ref.current.filter((data) => data.name !== rowData.name);
+        ref.current = newData
+        if (params.line || params.word) {
+            newData = newData.filter((item: any) => {
+                let filterLine = false;
+                let filterWord = false;
+                if (params.line) {
+                    filterLine = item.role.toLowerCase().includes(params.line)
+                }
+                if (params.word) {
+                    filterWord = item.name.toLowerCase().includes(params.word)
+                }
+                return filterLine || filterWord
+            })
+            return;
+        }
+        if (sortDescriptor?.direction) {
+            let order = sortDescriptor.direction === 'ascending' ? 'asc' : 'desc';
+            newData = orderBy(newData, [sortDescriptor.column], [order as any])
+        }
+        setDataSource(newData as any)
+    };
     const renderCell = React.useCallback((rowData, columnKey) => {
         const cellValue = rowData[columnKey];
         if (columnKey === 'actions') {
-            return <Button color="danger" isIconOnly>
+            return <Button color="danger" isIconOnly onClick={() => deleteRow(rowData)}>
 
                 <DeleteIcon />
 
@@ -28,39 +60,50 @@ export default () => {
         return dataSource.slice(start, end);
     }, [page, dataSource]);
 
-    let list = useAsyncList({
-        async load() {
-            return {
-                items: items,
-            };
-        },
-        async sort({ items, sortDescriptor }) {
-            return {
-                items: items.sort((a, b) => {
-                    let first = a[sortDescriptor.column];
-                    let second = b[sortDescriptor.column];
-                    let cmp = (parseInt(first) || first) < (parseInt(second) || second) ? -1 : 1;
-
-                    if (sortDescriptor.direction === "descending") {
-                        cmp *= -1;
-                    }
-                    return cmp;
-                }),
-            };
-        },
-    });
+    const exportExcel = () => {
+        exportToExcel(dataSource)
+    }
+    const sortChange = (descriptor: SortDescriptor) => {
+        sesortDescriptor(descriptor)
+        if (descriptor.direction) {
+            //'ascending' | 'descending'
+            let order = descriptor.direction === 'ascending' ? 'asc' : 'desc';
+            const sortData = orderBy(ref.current, [descriptor.column], [order as any])
+            setDataSource(sortData as any)
+        }
+    }
+    const onSearch = () => {
+        if (!params.line && !params.word) {
+            setDataSource(ref.current);
+            return;
+        }
+        const filterData = ref.current.filter((item: any) => {
+            let filterLine = false;
+            let filterWord = false;
+            if (params.line) {
+                filterLine = item.role.toLowerCase().includes(params.line)
+            }
+            if (params.word) {
+                filterWord = item.name.toLowerCase().includes(params.word)
+            }
+            return filterLine || filterWord
+        })
+        setDataSource(filterData)
+    }
     return (
-        <div className="p-4">
+        <div className="p-4 flex gap-2 flex-col">
 
             <div className="flex gap-2">
-                <Button color="primary">刷新</Button>
-                <Button color="success">导出为excel</Button>
+                <Input onClear={() => setParams({ ...params, word: '' })} isClearable className="max-w-64" value={params.word} onChange={e => setParams({ ...params, word: e.target.value })} label='搜单词' labelPlacement="outside-left"></Input>
+                <Input isClearable onClear={() => setParams({ ...params, line: '' })} className="max-w-64" value={params.line} onChange={e => setParams({ ...params, line: e.target.value })} label='搜例句' labelPlacement="outside-left"></Input>
+                <Button color="primary" onClick={onSearch}>搜索</Button>
+                <Button color="success" onClick={exportExcel}>导出为excel</Button>
             </div>
 
             <Table
                 aria-label="Example table with client side pagination"
-                sortDescriptor={list.sortDescriptor}
-                onSortChange={list.sort}
+                onSortChange={sortChange}
+                sortDescriptor={sortDescriptor}
                 bottomContent={
                     <div className="flex w-full justify-center">
                         <Pagination
@@ -81,11 +124,11 @@ export default () => {
                 <TableHeader>
                     <TableColumn key="name" allowsSorting>单词</TableColumn>
                     <TableColumn key="role" allowsSorting>例句和释义</TableColumn>
-                    <TableColumn key="role" allowsSorting>词源/帮记</TableColumn>
+                    <TableColumn key="role2" allowsSorting>词源/帮记</TableColumn>
                     <TableColumn key="count">查询次数</TableColumn>
                     <TableColumn key="actions">操作</TableColumn>
                 </TableHeader>
-                <TableBody items={list.items} isLoading={isLoading}
+                <TableBody items={items} isLoading={isLoading}
                     loadingContent={<Spinner label="Loading..." />}>
                     {(item) => (
                         <TableRow key={item.name}>
