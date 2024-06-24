@@ -11,4 +11,5 @@ export const aiModalOptions = [
     { label: "Kimi", value: "kimi" },
     { label: "通义", value: "tongyi" },
     { label: "豆包", value: "doubao" },
+    { label: "ollama", value: "ollama"}
   ]

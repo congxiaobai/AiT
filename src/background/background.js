@@ -7,6 +7,8 @@ import TongYiWordConnect from './TongYiWordConnect';
 import { SparkTTSRecorder as SparkConnectWord } from './SparkConnectWord';
 import DouBaoConnect from './DouBaoConnect';
 import DouBaoWordConnect from './DouBaoWordConnect';
+import OllamaConnect from './OllamaConnect';
+import OllamaWordConnect from "./OllamaWordConnect";
 chrome.runtime.onInstalled.addListener(() => {
         console.log('Extension installed and running.');
         chrome.contextMenus.create({
@@ -42,12 +44,14 @@ const TransRcord = {
         tongyi: tongyiTranslateText,
         spark: sparkTranslateText,
         doubao: doubaoTranslateText,
+        ollama: ollamaTranslateText,
 }
 const TransWordRcord = {
         kimi: kimiWordTranslateText,
         tongyi: tongyiWordTranslateText,
         spark: sparkWordTranslateText,
         doubao: doubaoWordTranslateText,
+        ollama: ollamaWordTranslateText,
 }
 async function tongyiWordTranslateText(text, tongyiConfig, promtText, sendResponse) {
 
@@ -231,6 +235,40 @@ async function doubaoTranslateText(textArray, doubaoConfig, promtText, sendRespo
                     },
                     () => {}
                 );
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                return JSON.stringify({ messages: textArray });
+        }
+}
+
+async function ollamaWordTranslateText(text, ollamaConfig, promtText, sendResponse) {
+
+        try {
+                OllamaWordConnect(text, ollamaConfig, promtText, (res) => {
+
+                        sendResponse(res)
+                        addFavoriteWords(text,promtText,res)
+                        // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
+                }, () => { })
+
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                return JSON.stringify({ messages: text });
+        }
+}
+
+async function ollamaTranslateText(textArray, ollamaConfig, promtText, sendResponse) {
+        if (!textArray || textArray.length === 0) {
+                sendResponse([])
+                return
+        }
+        try {
+                OllamaConnect(textArray, ollamaConfig, promtText, (res) => {
+                        console.log('translateItemCompleted', res.map(s => s.id).join(';'))
+                        sendResponse(res)
+                        // chrome.tabs.sendMessage(tabs[0].id, { action: "translateItemCompleted", payload: [payload] })
+                }, () => { })
+
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 return JSON.stringify({ messages: textArray });

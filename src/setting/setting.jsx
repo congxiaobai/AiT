@@ -14,6 +14,7 @@ import Kimi from './Kimi';
 import TongYi from './TongYi';
 import Words from './Words';
 import DouBao from './DouBao';
+import Ollama from "./Ollama";
 export default function App() {
   return (
     <div className="px-4 p-12">
@@ -240,6 +241,45 @@ export default function App() {
                   </div>
                   <div className="text-md text-default-500 p-1">
                     4. 将Api key和接入点Id填写到上面的设置中
+                  </div>
+                </div>
+              </CardFooter>
+            </Card>
+          </Tab>
+
+          <Tab
+              key="ollama"
+              className="flex-1"
+              title={<div className="p-2">ollama(本地开源大模型)</div>}
+          >
+            <Card>
+              <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                <div className="flex flex-col">
+                  <h4 className="text-md">开源大模型</h4>
+                  <p className="text-small text-default-500">
+                    本地大模型使用
+                  </p>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <Ollama></Ollama>
+              </CardBody>
+              <Divider className="mt-2 mb-2" />
+              <CardFooter>
+                <div className="flex-col gap-2">
+                  <div> 申请指南</div>
+                  <div className="text-md text-default-500 p-1">
+                    1.{' '}
+                    <Link
+                        href="https://ollama.com/library"
+                        isExternal={true}
+                    >
+                      点击这里
+                    </Link>
+                    先要电脑下载和安装好ollama，然后下载对应的模型后填入模型名字
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    2. 将下载好的模型名字填写到上面的设置中
                   </div>
                 </div>
               </CardFooter>
