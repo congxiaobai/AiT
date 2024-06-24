@@ -87,8 +87,8 @@ export default class PageState {
                 text: node.textContent || '',
             }
         })
-        //this.translateWithHttp(toTranslateNode)
-        this.translateWithPipe(toTranslateNode)
+        this.translateWithHttp(toTranslateNode)
+        // this.translateWithPipe(toTranslateNode)
     }
     // 使用流式HTTP请求
     translateWithPipe = (toTranslateNode: { id: string, text: string }[]) => {
