@@ -102,15 +102,15 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                         return
                 }
                 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                        const currentTabId = tabs[0].id;
+                        const currentTabId = tabs[0]?.id;
                         if (!currentTabId) {
-                                sendResponse([])
+                                sendResponse(true)
                                 console.error('没有找到activeTabId')
                                 return
                         }
                         getModalAndConfig((config: any) => {
                                 if (!config) {
-                                        sendResponse([])
+                                        sendResponse(true)
                                         return
                                 }
                                 const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
@@ -118,8 +118,10 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                         action: ChromeAction.NodeTranslated,
                                         text: JSON.parse(res)
                                 }))
+                                sendResponse(true)
                         })
                 })
+               
                 return true;
         }
         else {

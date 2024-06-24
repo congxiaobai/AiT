@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
-import { Table, TableHeader, TableColumn, Input, TableBody, Spinner, TableRow, TableCell, Pagination, Button, SortDescriptor } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, Switch, Input, TableBody, Spinner, TableRow, TableCell, Pagination, Button, SortDescriptor } from "@nextui-org/react";
 import { DeleteIcon } from './Icon'
 import { exportToExcel } from "./utils";
 import { orderBy } from "lodash";
+import Cards from "./Cards";
 export default () => {
     const [page, setPage] = React.useState(1);
+    const [wordCard, setWordCard] = React.useState(false);
     const [params, setParams] = React.useState({
         word: '',
         line: ''
     });
-    const ref = React.useRef();
+    const ref = React.useRef([]);
     const [dataSource, setDataSource] = React.useState([]);
     const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
     const rowsPerPage = 10;
@@ -119,42 +121,49 @@ export default () => {
                 <Input isClearable onClear={() => setParams({ ...params, line: '' })} className="max-w-64" value={params.line} onChange={e => setParams({ ...params, line: e.target.value })} label='搜例句' labelPlacement="outside-left"></Input>
                 <Button color="primary" onClick={onSearch}>搜索</Button>
                 <Button color="success" onClick={exportExcel}>导出为excel</Button>
+                <Switch
+                    checked={wordCard}
+                    onChange={(e) => setWordCard(e.target.checked)}
+                    color="secondary"
+                >
+                    {wordCard ? '单词卡' : '单词表'}
+                </Switch>
             </div>
-
-            <Table
-                aria-label="Example table with client side pagination"
-                onSortChange={sortChange}
-                sortDescriptor={sortDescriptor}
-                bottomContent={
-                    <div className="flex w-full justify-center">
-                        <Pagination
-                            isCompact
-                            showControls
-                            showShadow
-                            color="secondary"
-                            page={page}
-                            total={pages}
-                            onChange={(page) => setPage(page)}
-                        />
-                    </div>
-                }
-            >
-                <TableHeader>
-                    <TableColumn key="word" allowsSorting>单词</TableColumn>
-                    <TableColumn key="lines" allowsSorting>例句和释义</TableColumn>
-                    <TableColumn key="role2" allowsSorting>词源/帮记</TableColumn>
-                    <TableColumn key="count">查询次数</TableColumn>
-                    <TableColumn key="actions">操作</TableColumn>
-                </TableHeader>
-                <TableBody items={items} isLoading={isLoading}
-                    loadingContent={<Spinner label="Loading..." />}>
-                    {(item) => (
-                        <TableRow key={item.word}>
-                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+            {wordCard ? <>{items.map((s) => <Cards key={s.word} word={s.word} lines={s.lines} />)}</> :
+                <Table
+                    aria-label="Example table with client side pagination"
+                    onSortChange={sortChange}
+                    sortDescriptor={sortDescriptor}
+                    bottomContent={
+                        <div className="flex w-full justify-center">
+                            <Pagination
+                                isCompact
+                                showControls
+                                showShadow
+                                color="secondary"
+                                page={page}
+                                total={pages}
+                                onChange={(page) => setPage(page)}
+                            />
+                        </div>
+                    }
+                >
+                    <TableHeader>
+                        <TableColumn key="word" allowsSorting>单词</TableColumn>
+                        <TableColumn key="lines" allowsSorting>例句和释义</TableColumn>
+                        <TableColumn key="role2" allowsSorting>词源/帮记</TableColumn>
+                        <TableColumn key="count">查询次数</TableColumn>
+                        <TableColumn key="actions">操作</TableColumn>
+                    </TableHeader>
+                    <TableBody items={items} isLoading={isLoading}
+                        loadingContent={<Spinner label="Loading..." />}>
+                        {(item) => (
+                            <TableRow key={item.word}>
+                                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>}
         </div>
     );
 }
