@@ -1,7 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Table, TableHeader, TableColumn, Input, TableBody, Spinner, TableRow, TableCell, Pagination, Button, SortDescriptor } from "@nextui-org/react";
-import { useAsyncList } from "@react-stately/data";
-import { users } from "./data";
 import { DeleteIcon } from './Icon'
 import { exportToExcel } from "./utils";
 import { orderBy } from "lodash";
@@ -11,12 +9,31 @@ export default () => {
         word: '',
         line: ''
     });
-    const ref = React.useRef(users);
-    const [dataSource, setDataSource] = React.useState(users);
+    const ref = React.useRef();
+    const [dataSource, setDataSource] = React.useState([]);
     const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
     const rowsPerPage = 10;
     const [isLoading, setIsLoading] = React.useState(false);
 
+
+    useEffect(() => {
+        chrome.storage.local.get(null, function (items) {
+            if (chrome.runtime.lastError) {
+                console.error('Error getting items: ' + chrome.runtime.lastError);
+            } else {
+                let filteredItems: any = [];
+
+                for (let key in items) {
+                    if (key.startsWith('*word*')) {
+                        filteredItems.push(items[key]);
+                    }
+                }
+                // 现在filteredItems只包含符合条件的键值对
+                ref.current = filteredItems;
+                setDataSource(filteredItems)
+            }
+        });
+    }, [])
     const deleteRow = (rowData) => {
         let newData = ref.current.filter((data) => data.name !== rowData.name);
         ref.current = newData
@@ -48,6 +65,10 @@ export default () => {
                 <DeleteIcon />
 
             </Button>
+        }
+        if (columnKey === 'lines') {
+
+            return cellValue.join('\n')
         }
         return cellValue;
     }, [])
@@ -117,13 +138,10 @@ export default () => {
                         />
                     </div>
                 }
-                classNames={{
-                    wrapper: "min-h-[222px]",
-                }}
             >
                 <TableHeader>
-                    <TableColumn key="name" allowsSorting>单词</TableColumn>
-                    <TableColumn key="role" allowsSorting>例句和释义</TableColumn>
+                    <TableColumn key="word" allowsSorting>单词</TableColumn>
+                    <TableColumn key="lines" allowsSorting>例句和释义</TableColumn>
                     <TableColumn key="role2" allowsSorting>词源/帮记</TableColumn>
                     <TableColumn key="count">查询次数</TableColumn>
                     <TableColumn key="actions">操作</TableColumn>
@@ -131,7 +149,7 @@ export default () => {
                 <TableBody items={items} isLoading={isLoading}
                     loadingContent={<Spinner label="Loading..." />}>
                     {(item) => (
-                        <TableRow key={item.name}>
+                        <TableRow key={item.word}>
                             {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                         </TableRow>
                     )}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NextUIProvider, } from '@nextui-org/react';
 import { Textarea } from "@nextui-org/react";
 import { ChromeAction } from '../../constant';
+import { addFavoriteWords } from './FavoriteWords'
 function Popup(props: {
   selectionText: string,
   wordText: string
@@ -14,10 +15,11 @@ function Popup(props: {
         action: ChromeAction.TranslateWord,
         selectionText: props.selectionText,
         wordText: props.wordText,
-         }, (res) => {
-            console.log({ translateWordContent: res })
-            setContent(res)
-          }
+      }, (res) => {
+        console.log({ translateWordContent: res })
+        setContent(res)
+        addFavoriteWords(props.wordText, props.selectionText, res)
+      }
       )
     }
 
