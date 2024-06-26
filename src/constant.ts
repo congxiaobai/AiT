@@ -24,4 +24,7 @@ export const ChromeAction = {
   
     TranslateWord: 'translateWord', // content发起  获取词义
 
+    ForWordSource: 'ForWordSource', // content发起  获取词源
+    CorrectLine: 'CorrectLine', // content发起  获取词源
+
 }

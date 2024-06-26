@@ -5,8 +5,8 @@ import { LinesTranslate } from './LinesTranslate'
 import { WordTranslate } from './WordTranslate'
 import TongYiConnecStream from './PipeRequest/TongYi'
 import { ChromeAction } from '../constant';
-import { BackgroundChromRequestType, LinesRequestType, WordRequestType } from './type';
-import { generateLinsModalPromot, generateWordModalPromot } from './util';
+import { BackgroundChromRequestType, LinesRequestType, WordCardType, WordRequestType } from './type';
+import { generateCorrectLinePromot, generateLinsModalPromot, generateWordModalPromot, generateWordSourcePromot } from './util';
 import { LinesTranslatePipe } from './LinesTranslatePipe';
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -95,7 +95,29 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
 
                 return true;
 
-        } else if (request.action === ChromeAction.TranslateNodesWithPipe) {
+        } else if (request.action === ChromeAction.CorrectLine || request.action === ChromeAction.ForWordSource) {
+                const payload = (request as WordCardType).payload;
+                if (!payload) {
+                        sendResponse([])
+                        return
+                }
+                getModalAndConfig((config: any) => {
+                        if (!config) {
+                                sendResponse([])
+                                return
+                        }
+                        const promptArray = payload.line ? generateCorrectLinePromot(payload.line) : generateWordSourcePromot(payload.word)
+                        WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
+                                console.log(res)
+                                sendResponse(res)
+                        })
+                })
+
+                return true;
+
+        }
+
+        else if (request.action === ChromeAction.TranslateNodesWithPipe) {
                 const nodeArray = (request as LinesRequestType).nodeArray;
                 if (!nodeArray || !nodeArray.length) {
                         sendResponse([])
@@ -121,7 +143,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                 sendResponse(true)
                         })
                 })
-               
+
                 return true;
         }
         else {

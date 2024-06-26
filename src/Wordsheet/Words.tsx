@@ -6,36 +6,41 @@ import { orderBy } from "lodash";
 import Cards from "./Cards";
 export default () => {
     const [page, setPage] = React.useState(1);
-    const [wordCard, setWordCard] = React.useState(false);
+    const [wordCard, setWordCard] = React.useState(true);
     const [params, setParams] = React.useState({
         word: '',
         line: ''
     });
-    const ref = React.useRef([]);
-    const [dataSource, setDataSource] = React.useState([]);
+    const ref = React.useRef([{
+        word: 'name', count: 1, lines: ['myNameIs Lily（我的名字是丽丽）', 'myNameIs Lily（我的名字是丽丽）']
+    }]);
+    const [dataSource, setDataSource] = React.useState([{
+        word: 'name', count: 1, translated: ['我的名字是丽丽我的名字是丽丽我的名字是丽丽'],
+        lines: ['myNameIs Lily（我的名字是丽丽）myNameIs Lily（我的名字是丽丽）myNameIs Lily（我的名字是丽丽）', 'myNameIs Lily（我的名字是丽丽）']
+    }]);
     const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
     const rowsPerPage = 10;
     const [isLoading, setIsLoading] = React.useState(false);
 
 
-    useEffect(() => {
-        chrome.storage.local.get(null, function (items) {
-            if (chrome.runtime.lastError) {
-                console.error('Error getting items: ' + chrome.runtime.lastError);
-            } else {
-                let filteredItems: any = [];
+    // useEffect(() => {
+    //     chrome.storage.local.get(null, function (items) {
+    //         if (chrome.runtime.lastError) {
+    //             console.error('Error getting items: ' + chrome.runtime.lastError);
+    //         } else {
+    //             let filteredItems: any = [];
 
-                for (let key in items) {
-                    if (key.startsWith('*word*')) {
-                        filteredItems.push(items[key]);
-                    }
-                }
-                // 现在filteredItems只包含符合条件的键值对
-                ref.current = filteredItems;
-                setDataSource(filteredItems)
-            }
-        });
-    }, [])
+    //             for (let key in items) {
+    //                 if (key.startsWith('*word*')) {
+    //                     filteredItems.push(items[key]);
+    //                 }
+    //             }
+    //             // 现在filteredItems只包含符合条件的键值对
+    //             ref.current = filteredItems;
+    //             setDataSource(filteredItems)
+    //         }
+    //     });
+    // }, [])
     const deleteRow = (rowData) => {
         let newData = ref.current.filter((data) => data.name !== rowData.name);
         ref.current = newData
@@ -68,7 +73,7 @@ export default () => {
 
             </Button>
         }
-        if (columnKey === 'lines') {
+        if (columnKey === 'lines' && cellValue) {
 
             return cellValue.join('\n')
         }
@@ -129,7 +134,21 @@ export default () => {
                     {wordCard ? '单词卡' : '单词表'}
                 </Switch>
             </div>
-            {wordCard ? <>{items.map((s) => <Cards key={s.word} word={s.word} lines={s.lines} />)}</> :
+            {wordCard ?
+                <div className="flex justify-center items-center gap-4  mt-40 flex-col flex-grow-0 width-full">
+                    {items.map((s) => <Cards key={s.word} word={s.word} lines={s.lines}  translated={s.translated}/>)}
+
+                    <Pagination
+                        isCompact
+                        showControls
+                        showShadow
+                        color="secondary"
+                        page={page}
+                        total={pages}
+                        onChange={(page) => setPage(page)}
+                    />
+
+                </div> :
                 <Table
                     aria-label="Example table with client side pagination"
                     onSortChange={sortChange}

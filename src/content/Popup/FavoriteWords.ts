@@ -24,16 +24,17 @@ export function addFavoriteWords(word: string, line: string, translated: string)
             chrome.storage.local.set({
                 [wordKey]: {
                     word,
-                    lines: [`${line}(${translated})`],
-                    // translated: [translated],
+                    lines: [`${line}`],
+                    translated: [translated],
                     count: 1,
                 }
             }, () => console.log('setValue'))
         } else {
             if (!result.lines.includes(s => s.startsWith(line)) || result.lines.length < 5) {
-                result.lines.push(`${line}(${translated})`);
+                result.lines.push(`${line}`);
+                result.translated.push(translated);
             }
-            // result.translated.push(translated);
+            // 
             result.count++;
             chrome.storage.local.set({
                 [wordKey]: result

@@ -48,3 +48,29 @@ export const generateWordModalPromot = (wordText: string, selectiontext: string)
     }
   ]
 }
+
+export const generateWordSourcePromot = (wordText: string,) => {
+  return [
+    {
+      role: "system",
+      content: "你是一个翻译专家。"
+    },
+    {
+      role: "user",
+      content: `请讲一下"${wordText}"这个单词，如果它有近义词，反义词，原型词，请列出一部分。如果有词源，可以说一下词源。如果有一些帮助记忆的办法，可以说一下。整体150字以内。`
+    }
+  ]
+}
+
+export const generateCorrectLinePromot = ( line: string) => {
+  return [
+    {
+      role: "system",
+      content: "你是一个英语老师"
+    },
+    {
+      role: "user",
+      content: `请帮我看一下"${line}" 是否存在错误，并给出建议。150字以内。`
+    }
+  ]
+}
