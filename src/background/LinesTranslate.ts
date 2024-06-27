@@ -2,6 +2,7 @@
 import TongYiConnect from './HttpRequest/TongYi';
 import { generateWs } from './HttpRequest/Spark';
 import KimiConnect from './HttpRequest/Kimi';
+import DouBaoConnect from './HttpRequest/Doubao';
 const jsonPattern = /```json\n([\s\S]*?)\n```/
 export const LinesTranslate: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
@@ -9,13 +10,37 @@ export const LinesTranslate: {
         tongyi: tongyiTranslate,
         spark: sparkTranslate,
         kimi: kimiTranslate,
+        doubao: doubaoConnect,
 }
 
+async function doubaoConnect(promptArray: any[], config: any, sendResponse: Function) {
+        try {
+                const response = await DouBaoConnect(promptArray, config)
 
+                if (response?.data?.output?.choices) {
+                        const allRes = response.data.output.choices.map(s => s.message?.content).join('')
+                        const match = jsonPattern.exec(allRes);
+                        if (match) {
+                                // 提取并解析JSON字符串
+                                const jsonString = match[1];
+                                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+                                console.log({ jsonData })
+                                sendResponse(jsonData)
+                        }
+                } else {
+                        sendResponse(['error'])
+                }
+
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                sendResponse(['error'])
+                return
+        }
+}
 async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
                 const response = await TongYiConnect(promptArray, config)
-              
+
                 if (response?.data?.output?.choices) {
                         const allRes = response.data.output.choices.map(s => s.message?.content).join('')
                         const match = jsonPattern.exec(allRes);

@@ -9,7 +9,7 @@ export default async (promptArray: {
 }[], config: any) => {
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.tongyi_apiSecret}`,
+        'Authorization': `Bearer ${config.tongyi_apiKey}`,
     };
     const body = {
         model: "qwen-turbo",

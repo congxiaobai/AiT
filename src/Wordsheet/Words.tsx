@@ -4,6 +4,7 @@ import { DeleteIcon } from './Icon'
 import { exportToExcel } from "./utils";
 import { orderBy } from "lodash";
 import Cards from "./Cards";
+import { WordType } from "./WordType";
 export default () => {
     const [page, setPage] = React.useState(1);
     const [wordCard, setWordCard] = React.useState(true);
@@ -11,39 +12,33 @@ export default () => {
         word: '',
         line: ''
     });
-    const ref = React.useRef([{
-        word: 'name', count: 1, lines: ['myNameIs Lily（我的名字是丽丽）', 'myNameIs Lily（我的名字是丽丽）']
-    }]);
-    const [dataSource, setDataSource] = React.useState([{
-        word: 'name', count: 1, translated: ['我的名字是丽丽我的名字是丽丽我的名字是丽丽'],
-        lines: ['myNameIs Lily（我的名字是丽丽）myNameIs Lily（我的名字是丽丽）myNameIs Lily（我的名字是丽丽）', 'myNameIs Lily（我的名字是丽丽）']
-    }]);
+    const ref = React.useRef<WordType[]>([]);
+    const [dataSource, setDataSource] = React.useState<WordType[]>([]);
     const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
-    const rowsPerPage = 10;
+    const rowsPerPage = wordCard ? 1 : 10;
     const [isLoading, setIsLoading] = React.useState(false);
 
 
-    // useEffect(() => {
-    //     chrome.storage.local.get(null, function (items) {
-    //         if (chrome.runtime.lastError) {
-    //             console.error('Error getting items: ' + chrome.runtime.lastError);
-    //         } else {
-    //             let filteredItems: any = [];
+    useEffect(() => {
+        chrome.storage.local.get(null, function (items) {
+            if (chrome.runtime.lastError) {
+                console.error('Error getting items: ' + chrome.runtime.lastError);
+            } else {
+                let filteredItems: any = [];
 
-    //             for (let key in items) {
-    //                 if (key.startsWith('*word*')) {
-    //                     filteredItems.push(items[key]);
-    //                 }
-    //             }
-    //             // 现在filteredItems只包含符合条件的键值对
-    //             ref.current = filteredItems;
-    //             setDataSource(filteredItems)
-    //         }
-    //     });
-    // }, [])
-    const deleteRow = (rowData) => {
-        let newData = ref.current.filter((data) => data.name !== rowData.name);
-        ref.current = newData
+                for (let key in items) {
+                    if (key.startsWith('*word*')) {
+                        filteredItems.push(items[key]);
+                    }
+                }
+                // 现在filteredItems只包含符合条件的键值对
+                ref.current = filteredItems;
+                setDataSource(filteredItems)
+            }
+        });
+    }, [])
+    const deleteRow = (rowData: WordType) => {
+        let newData = ref.current.filter((data) => data.word !== rowData.word);
         if (params.line || params.word) {
             newData = newData.filter((item: any) => {
                 let filterLine = false;
@@ -60,11 +55,13 @@ export default () => {
         }
         if (sortDescriptor?.direction) {
             let order = sortDescriptor.direction === 'ascending' ? 'asc' : 'desc';
-            newData = orderBy(newData, [sortDescriptor.column], [order as any])
+            newData = orderBy(newData, [sortDescriptor.column], [order as any]) as any
         }
+        ref.current = newData
+
         setDataSource(newData as any)
     };
-    const renderCell = React.useCallback((rowData, columnKey) => {
+    const renderCell = React.useCallback((rowData: WordType, columnKey: keyof WordType & 'actions') => {
         const cellValue = rowData[columnKey];
         if (columnKey === 'actions') {
             return <Button color="danger" isIconOnly onClick={() => deleteRow(rowData)}>
@@ -74,8 +71,7 @@ export default () => {
             </Button>
         }
         if (columnKey === 'lines' && cellValue) {
-
-            return cellValue.join('\n')
+            return (cellValue as string[]).join('\n')
         }
         return cellValue;
     }, [])
@@ -136,7 +132,7 @@ export default () => {
             </div>
             {wordCard ?
                 <div className="flex justify-center items-center gap-4  mt-40 flex-col flex-grow-0 width-full">
-                    {items.map((s) => <Cards key={s.word} word={s.word} lines={s.lines}  translated={s.translated}/>)}
+                    {items.map((s) => <Cards key={s.word} count={s.count} word={s.word} lines={s.lines} translated={s.translated} />)}
 
                     <Pagination
                         isCompact

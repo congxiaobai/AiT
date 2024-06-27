@@ -6,17 +6,18 @@ import React from 'react';
 export default () => {
   const { enqueueToast } = useToast();
   const [value, setValue] = useState({
-    tongyi_apiKey: '',
+    doubao_apiKey: '',
+    doubao_endpoint: '',
   });
   const [canSubmit, setCanSubmit] = useState(false);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    chrome?.storage?.sync?.get(['tongyi_apiKey'], (items) => {
+    chrome?.storage?.sync?.get(['doubao_apiKey', 'doubao_endpoint'], (items) => {
       items && setValue(items);
     });
   }, []);
   useEffect(() => {
-    if (value.tongyi_apiKey) {
+    if (value.doubao_apiKey && value.doubao_endpoint) {
       setCanSubmit(true);
     } else {
       setCanSubmit(false);
@@ -26,7 +27,8 @@ export default () => {
     setLoading(true);
     chrome.storage.sync.set(
       {
-        tongyi_apiKey: value.tongyi_apiKey,
+        doubao_apiKey: value.doubao_apiKey,
+        doubao_endpoint: value.doubao_endpoint,
       },
       () => {
         setLoading(false);
@@ -46,11 +48,20 @@ export default () => {
         placeholder="请在官网获取"
         isClearable={true}
         className="max-w-xs"
-        value={value.tongyi_apiKey}
-        onClear={() => setValue({ tongyi_apiKey: '' })}
-        onChange={(e) => setValue({ tongyi_apiKey: e.target.value })}
+        value={value.doubao_apiKey}
+        onClear={() => setValue({ ...value, doubao_apiKey: '' })}
+        onChange={(e) => setValue({ ...value, doubao_apiKey: e.target.value })}
       />
-
+      <Input
+        label="接入点"
+        isRequired
+        placeholder="请在官网获取"
+        isClearable={true}
+        className="max-w-xs"
+        value={value.doubao_endpoint}
+        onClear={() => setValue({ ...value, doubao_endpoint: '' })}
+        onChange={(e) => setValue({ ...value, doubao_endpoint: e.target.value })}
+      />
       <div>
         <Button
           isLoading={loading}

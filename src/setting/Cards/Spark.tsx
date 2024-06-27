@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Input, Button } from "@nextui-org/react";
 import { useToast } from 'tw-noti';
+import React from 'react';
 
 export default () => {
     const { enqueueToast } = useToast();

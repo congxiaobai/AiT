@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Divider, CardFooter, Chip, Textarea, Button, Spacer, Tooltip } from "@nextui-org/react";
 import { ChromeAction } from "../constant";
+import { WordType } from "./WordType";
 
-export default (props: {
-  lines: string[], word: string, translated: string[], count: number
-}) => {
+export default (props:WordType) => {
   const { word, lines, translated = [], count } = props;
   const [line, setLine] = useState('')
   const [wordSorce, setWordSorce] = useState('')

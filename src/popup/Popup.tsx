@@ -34,13 +34,13 @@ const App = () => {
       setSourceLang(items.detecLang)
     });
     let disabledKeys: string[] = []
-    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiSecret', 'doubao_apiKey'], (items) => {
+    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiKey', 'doubao_apiKey'], (items) => {
       if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
         disabledKeys.push('spark')
       } if (!items.kimi_apiKey) {
         disabledKeys.push('kimi')
       }
-      if (!items.tongyi_apiSecret) {
+      if (!items.tongyi_apiKey) {
         disabledKeys.push('tongyi')
       }
       if (!items.doubao_apiKey) {

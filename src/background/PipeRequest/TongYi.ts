@@ -7,7 +7,7 @@ export default (promptArray: {
 }[], config: any, onResult: (res: any) => void) => {
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.tongyi_apiSecret}`, // 使用process.env访问环境变量
+        'Authorization': `Bearer ${config.tongyi_apiKey}`, // 使用process.env访问环境变量
         'X-DashScope-SSE': 'enable',
         'Accept': 'text/event-stream',
         responseType: 'stream'

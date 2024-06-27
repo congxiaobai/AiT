@@ -32,7 +32,8 @@ const TransConfig: {
 } = {
         kimi: ['kimi_apiKey'],
         spark: ['spark_apiKey', 'spark_apiSecret', 'spark_appId'],
-        tongyi: ['tongyi_apiSecret']
+        tongyi: ['tongyi_apiKey'],
+        doubao: ['doubao_apiKey', 'doubao_endpoint']
 }
 
 //使用长连接通信
@@ -40,7 +41,7 @@ const TransConfig: {
 //         console.assert(port.name === "content-to-background");
 //         port.onMessage.addListener(function (message) {
 //                 if (message.action === 'translateContent') {
-//                         chrome?.storage?.sync?.get(['tongyi_apiSecret'], (config) => {
+//                         chrome?.storage?.sync?.get(['tongyi_apiKey'], (config) => {
 //                                 if (config) {
 //                                         TongYiConnecStream(message.text, config, message.promtText, (res) => {
 //                                                 port.postMessage(JSON.parse(res));

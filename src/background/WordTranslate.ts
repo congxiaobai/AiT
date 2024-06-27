@@ -2,14 +2,32 @@
 import TongYiConnect from './HttpRequest/TongYi';
 import { generateWs } from './HttpRequest/Spark';
 import KimiConnect from './HttpRequest/Kimi';
+import DoubaoConnect from './HttpRequest/Doubao';
 export const WordTranslate: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
 } = {
         tongyi: tongyiTranslate,
         spark: sparkTranslate,
         kimi: kimiTranslate,
+        doubao: doubaoTranslate,
 }
 
+async function doubaoTranslate(promptArray: any[], config: any, sendResponse: Function) {
+        try {
+                const response = await DoubaoConnect(promptArray, config);
+
+                if (response?.data?.output?.choices) {
+                        const allRes = response.data.output.choices.map(s => s.message?.content).join('')
+                        sendResponse(allRes)
+
+                } else {
+                        sendResponse([])
+                }
+        } catch (error) {
+                console.error('Error parsing the translated text:', error);
+                return
+        }
+}
 async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
                 const response = await TongYiConnect(promptArray, config);
