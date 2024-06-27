@@ -118,11 +118,11 @@ export default () => {
         setDataSource(filterData)
     }
     const changeRow = (rowData: WordType) => {
-        let dataindex = ref.current.findIndex((data) => data.word !== rowData.word);
+        let dataindex = ref.current.findIndex((data) => data.word === rowData.word);
         if (dataindex > -1) {
             ref.current[dataindex] = rowData;
         }
-        let sourceindex = dataSource.findIndex((data) => data.word !== rowData.word);
+        let sourceindex = dataSource.findIndex((data) => data.word === rowData.word);
         if (sourceindex > -1) {
             dataSource[sourceindex] = rowData;
             setDataSource([...dataSource])
@@ -148,6 +148,7 @@ export default () => {
                 <div className="flex justify-center items-center gap-4  mt-40 flex-col flex-grow-0 width-full">
                     {items.map((s) => <Cards key={s.word}
                         onChangData={changeRow}
+                        wordSource ={s.wordSource}
                         count={s.count} word={s.word} lines={s.lines} translated={s.translated} />)}
 
                     <Pagination

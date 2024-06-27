@@ -32,7 +32,7 @@ const getExcelColumns = () => {
     let items = {
       header: item.title,
       key: item.dataIndex,
-      width:50,
+      width: 50,
       style: {
 
         alignment: {
@@ -48,7 +48,7 @@ const getExcelColumns = () => {
 };
 
 // 导出excel
-export const exportToExcel = (dataSource:any) => {
+export const exportToExcel = (dataSource: any) => {
   const workbook = new Exceljs.Workbook();
   //创建一个名字为Sheet1的工作表
   const worksheet = workbook.addWorksheet('Sheet1');
@@ -64,3 +64,16 @@ export const exportToExcel = (dataSource:any) => {
   });
 };
 
+
+export function updateWordSource(word: string, wordSource: string,) {
+  // 获取特定键的值
+  const wordKey = '*word*' + word;
+  chrome.storage.local.get([wordKey], function (result) {
+    if (result.count) {
+      result.wordSource = wordSource
+    }
+    chrome.storage.local.set({
+      [wordKey]: result
+    }, () => console.log('setValue'))
+  })
+}

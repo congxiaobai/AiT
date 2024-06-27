@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader, Divider, CardFooter, Chip, Textarea, Button, Spacer, Tooltip } from "@nextui-org/react";
 import { ChromeAction } from "../constant";
 import { WordType } from "./WordType";
+import { updateWordSource } from "./utils";
 
 export default (props: WordType & { onChangData: Function }) => {
-  const { word, lines, translated = [], count, onChangData, wordSorce } = props;
+  const { word, lines, translated = [], count, onChangData, wordSource } = props;
   const [line, setLine] = useState('')
 
   const [loading, setLoading] = useState(false)
@@ -20,10 +21,13 @@ export default (props: WordType & { onChangData: Function }) => {
       }
     }, function (response) {
       setLoading(false)
+      if (response) {
+        updateWordSource(word, response)
+        onChangData({
+          word, lines, translated, count, wordSource: response
+        })
+      }
 
-      response && onChangData({
-        word, lines, translated, count, wordSorce,response
-      })
     });
   }
   const requestCorrect = () => {
@@ -34,6 +38,7 @@ export default (props: WordType & { onChangData: Function }) => {
       }
     }, function (response) {
       setLoading(false)
+
       response && setCorret(response)
     });
   }
@@ -76,7 +81,7 @@ export default (props: WordType & { onChangData: Function }) => {
           }
           <Spacer y={2}></Spacer>
           <div className='italic text-lg font-bold' >词源</div>
-          {wordSorce ? <>{wordSorce}</> : <Button isLoading={loading} color="primary" onClick={requestWordSource}>获取词源</Button>}
+          {wordSource ? <>{wordSource}</> : <Button isLoading={loading} color="primary" onClick={requestWordSource}>获取词源</Button>}
         </div>
 
       </CardBody>
