@@ -3,12 +3,13 @@ import { Card, CardBody, CardHeader, Divider, CardFooter, Chip, Textarea, Button
 import { ChromeAction } from "../constant";
 import { WordType } from "./WordType";
 
-export default (props:WordType) => {
-  const { word, lines, translated = [], count } = props;
+export default (props: WordType & { onChangData: Function }) => {
+  const { word, lines, translated = [], count, onChangData, wordSorce } = props;
   const [line, setLine] = useState('')
-  const [wordSorce, setWordSorce] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [corret, setCorret] = useState('')
+
 
   const requestWordSource = async () => {
     setLoading(true)
@@ -20,7 +21,9 @@ export default (props:WordType) => {
     }, function (response) {
       setLoading(false)
 
-      response && setWordSorce(response)
+      response && onChangData({
+        word, lines, translated, count, wordSorce,response
+      })
     });
   }
   const requestCorrect = () => {

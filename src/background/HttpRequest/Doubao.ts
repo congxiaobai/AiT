@@ -8,16 +8,11 @@ export default async (promptArray: {
 }[], config: any) => {
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${config.dooubao_apiKey}`,
+    'Authorization': `Bearer ${config.doubao_apiKey}`,
   };
   const body = {
     model: config.doubao_endpoint,
-    input: {
-      messages: promptArray
-    },
-    parameters: {
-      result_format: "message"
-    }
+    messages: promptArray
   };
 
   const response = await axios.post(url, body, {

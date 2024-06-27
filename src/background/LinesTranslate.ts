@@ -17,16 +17,12 @@ async function doubaoConnect(promptArray: any[], config: any, sendResponse: Func
         try {
                 const response = await DouBaoConnect(promptArray, config)
 
-                if (response?.data?.output?.choices) {
-                        const allRes = response.data.output.choices.map(s => s.message?.content).join('')
-                        const match = jsonPattern.exec(allRes);
-                        if (match) {
-                                // 提取并解析JSON字符串
-                                const jsonString = match[1];
-                                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-                                console.log({ jsonData })
-                                sendResponse(jsonData)
-                        }
+                if (response?.data?.choices) {
+                        const allRes = response.data.choices.map(s => s.message?.content).join('')
+                        const jsonData = JSON.parse(allRes.replace(/'/g, '"'));
+                        console.log({ jsonData })
+                        sendResponse(jsonData)
+
                 } else {
                         sendResponse(['error'])
                 }

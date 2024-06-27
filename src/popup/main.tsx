@@ -23,36 +23,43 @@ const App = () => {
       trans_modal: aiModal
     })
   }, [aiModal])
-  // chrome.runtime.onMessage.addListener(function (request, sender,) {
-  //   if (request.action === "loading") {
-  //     setBtnLoading(request.loading);
-  //   }
-  //   return true;
-  // });
+  useEffect(() => {
+    aiModal && chrome?.storage?.sync.set({
+      sourceLang: sourceLang,
+      targetLang: targetLang
+    })
+  }, [sourceLang, targetLang])
+  chrome.runtime.onMessage.addListener(function (request, sender,) {
+    if (request.action === "loading") {
+      setBtnLoading(request.loading);
+    }
+    return true;
+  });
   useEffect(() => {
     chrome?.storage?.sync?.get(['detecLang'], (items) => {
       setSourceLang(items.detecLang)
     });
     let disabledKeys: string[] = []
-    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey', 'tongyi_apiKey', 'doubao_apiKey'], (items) => {
-      if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
-        disabledKeys.push('spark')
-      } if (!items.kimi_apiKey) {
-        disabledKeys.push('kimi')
-      }
-      if (!items.tongyi_apiKey) {
-        disabledKeys.push('tongyi')
-      }
-      if (!items.doubao_apiKey) {
-        disabledKeys.push('doubao')
-      }
+    chrome?.storage?.sync?.get(['spark_appId', 'spark_apiSecret', 'spark_apiKey', 'trans_modal', 'kimi_apiKey',
+      'tongyi_apiKey', 'doubao_apiKey', 'doubao_endpoint'], (items) => {
+        if (!items.spark_appId || !items.spark_apiSecret || !items.spark_apiKey) {
+          disabledKeys.push('spark')
+        } if (!items.kimi_apiKey) {
+          disabledKeys.push('kimi')
+        }
+        if (!items.tongyi_apiKey) {
+          disabledKeys.push('tongyi')
+        }
+        if (!items.doubao_apiKey || !items.doubao_endpoint) {
+          disabledKeys.push('doubao')
+        }
 
-      if (items.trans_modal) {
-        setAiModal(items.trans_modal)
-      } else {
-        setAiModal('spark')
-      }
-    });
+        if (items.trans_modal && !disabledKeys.includes(items.trans_modal)) {
+          setAiModal(items.trans_modal)
+        } else {
+          setAiModal('')
+        }
+      });
 
     setDisabledKeys(disabledKeys)
   }, []);

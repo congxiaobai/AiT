@@ -125,60 +125,9 @@ export default function App() {
               </CardFooter>
             </Card>
           </Tab>
+    
           <Tab
-            key="tongyi"
-            className="flex-1"
-            title={<div className="p-2">通义千问(阿里灵积大模型)</div>}
-          >
-            <Card>
-              <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-                <div className="flex flex-col">
-                  <h4 className="text-md">阿里巴巴出品</h4>
-                  <p className="text-small text-default-500">
-                    速度快，质量高，新用户可以申请400万token
-                  </p>
-                </div>
-              </CardHeader>
-              <CardBody>
-                <TongYi></TongYi>
-              </CardBody>
-              <Divider className="mt-2 mb-2" />
-              <CardFooter>
-                <div className="flex-col gap-2">
-                  <div> 申请指南</div>
-                  <div className="text-md text-default-500 p-1">
-                    1.{' '}
-                    <Link
-                      href="https://dashscope.aliyun.com/"
-                      isExternal={true}
-                    >
-                      点击这里
-                    </Link>
-                    申请账号
-                  </div>
-                  <div className="text-md text-default-500 p-1">
-                    2. <Link
-                      href="https://dashscope.console.aliyun.com/model?spm=5176.28630291.0.0.24bf7eb5MIecU5
-                      "
-                      isExternal={true}
-                    >  点击这里
-                    </Link>
-                    进入控制台，在左侧菜单栏里选择模型广场，选择申请体验'通义千问'，领取免费token。
-                  </div>
-
-                  <div className="text-md text-default-500 p-1">
-                    3. 点击左侧面板，'API-KEY管理'生成API Key。
-                  </div>
-                  <div className="text-md text-default-500 p-1">
-                    4. 将Api key填写到上面的设置中
-                  </div>
-                  <p>联系作者:congxiaobai1233@gmail.com</p>
-                </div>
-              </CardFooter>
-            </Card>
-          </Tab>
-          <Tab
-            key="coze"
+            key="doubao"
             className="flex-1"
             title={<div className="p-2">豆包</div>}
           >

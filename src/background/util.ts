@@ -43,8 +43,8 @@ export const generateWordModalPromot = (wordText: string, selectiontext: string)
     },
     {
       role: "user",
-      content: wordText ? `请分析"${selectiontext}"的一般含义，以及在“${wordText}”这段文字中${selectiontext}的含义。尽量简略一点,100字以内,返回的内容至少有两个换行。` :
-        `请分析"${selectiontext}"的一般含义和用法，如果有词源可以讲一下词源。尽量简略一点,100字以内,返回的内容至少有一次换行。`
+      content: wordText ? `请解析“${wordText}”这句文本中${selectiontext}的释义。尽量简略一点,100字以内。` :
+        `请分析"${selectiontext}"的一般释义和用法，如果有词源可以讲一下词源。尽量简略一点,100字以内。`
     }
   ]
 }
@@ -62,7 +62,7 @@ export const generateWordSourcePromot = (wordText: string,) => {
   ]
 }
 
-export const generateCorrectLinePromot = ( line: string) => {
+export const generateCorrectLinePromot = (line: string) => {
   return [
     {
       role: "system",

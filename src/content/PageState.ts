@@ -156,9 +156,9 @@ export default class PageState {
         for (let i = 0; i < unTransNode.length; i += this.batchSize) {
             const batch = unTransNode.slice(i, i + this.batchSize);
             console.log('请求翻译的节点', batch.map(s => s.id).join(';'));
-            // chrome.runtime.sendMessage({
-            //     action: "loading", loading: true
-            // }, () => { })
+            chrome.runtime.sendMessage({
+                action: "loading", loading: true
+            }, () => { })
             chrome.runtime.sendMessage({
                 action: ChromeAction.TranslateNodeWithHttp,
                 promptText: this.promptText,

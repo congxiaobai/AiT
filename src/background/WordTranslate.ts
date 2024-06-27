@@ -16,8 +16,8 @@ async function doubaoTranslate(promptArray: any[], config: any, sendResponse: Fu
         try {
                 const response = await DoubaoConnect(promptArray, config);
 
-                if (response?.data?.output?.choices) {
-                        const allRes = response.data.output.choices.map(s => s.message?.content).join('')
+                if (response?.data?.choices) {
+                        const allRes = response.data.choices.map(s => s.message?.content).join('')
                         sendResponse(allRes)
 
                 } else {

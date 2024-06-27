@@ -39,6 +39,9 @@ export default () => {
     }, [])
     const deleteRow = (rowData: WordType) => {
         let newData = ref.current.filter((data) => data.word !== rowData.word);
+        refreshData(newData)
+    };
+    const refreshData = (newData: WordType[]) => {
         if (params.line || params.word) {
             newData = newData.filter((item: any) => {
                 let filterLine = false;
@@ -60,7 +63,7 @@ export default () => {
         ref.current = newData
 
         setDataSource(newData as any)
-    };
+    }
     const renderCell = React.useCallback((rowData: WordType, columnKey: keyof WordType & 'actions') => {
         const cellValue = rowData[columnKey];
         if (columnKey === 'actions') {
@@ -114,6 +117,17 @@ export default () => {
         })
         setDataSource(filterData)
     }
+    const changeRow = (rowData: WordType) => {
+        let dataindex = ref.current.findIndex((data) => data.word !== rowData.word);
+        if (dataindex > -1) {
+            ref.current[dataindex] = rowData;
+        }
+        let sourceindex = dataSource.findIndex((data) => data.word !== rowData.word);
+        if (sourceindex > -1) {
+            dataSource[sourceindex] = rowData;
+            setDataSource([...dataSource])
+        }
+    }
     return (
         <div className="p-4 flex gap-2 flex-col">
 
@@ -127,12 +141,14 @@ export default () => {
                     onChange={(e) => setWordCard(e.target.checked)}
                     color="secondary"
                 >
-                    {wordCard ? '单词卡' : '单词表'}
+                    {wordCard ? '切换到表模式' : '切换到单词卡模式'}
                 </Switch>
             </div>
             {wordCard ?
                 <div className="flex justify-center items-center gap-4  mt-40 flex-col flex-grow-0 width-full">
-                    {items.map((s) => <Cards key={s.word} count={s.count} word={s.word} lines={s.lines} translated={s.translated} />)}
+                    {items.map((s) => <Cards key={s.word}
+                        onChangData={changeRow}
+                        count={s.count} word={s.word} lines={s.lines} translated={s.translated} />)}
 
                     <Pagination
                         isCompact

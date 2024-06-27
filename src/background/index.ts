@@ -168,8 +168,8 @@ const getModalAndConfig = (callback: Function) => {
                         callback(false);
                         return
                 }
-                const configKey = TransConfig[transModal.trans_modal];
-                chrome?.storage?.sync?.get(configKey, (modalConfig) => {
+                const configKey = TransConfig[transModal.trans_modal]
+                chrome?.storage?.sync?.get([...configKey, 'sourceLang', 'targetLang'], (modalConfig) => {
                         if (!modalConfig) {
                                 callback(false);
                                 return false
