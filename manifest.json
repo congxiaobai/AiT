@@ -5,8 +5,7 @@
   "description": "基于国内大模型实现的沉浸式翻译插件，支持星火，通义，kimi",
   "permissions": [
     "<all_urls>",
-    "activeTab",
-    "scripting",
+
     "tabs",
     "storage",
     "contextMenus"
