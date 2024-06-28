@@ -13,6 +13,7 @@ export default class PageState {
     private allCacheTextNodes: CacheNode = {};
     private appendsNodes: Node[] = [];
     private observer: IntersectionObserver;
+
     private batchSize = 10;
     private promptText: string;
     private currentURLKey: string;
@@ -71,6 +72,40 @@ export default class PageState {
             this.observer.observe(s as any)
             s._$sortIndex = index
         })
+    }
+    //监听增长的node
+    watchForMutation = () => {
+        const mutationObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (isElementNode(node as Element)) {
+                            this.gatherTextNodes(node)  
+                        }
+                    });
+                    this.observerNode()
+                }
+            });
+
+            if (aggregationTimeout) {
+                clearTimeout(aggregationTimeout);
+            }
+
+            aggregationTimeout = setTimeout(() => {
+                while (textNodeQueue.size > 0) {
+                    const node = textNodeQueue.values().next().value;
+                    textNodeQueue.delete(node);
+                    pendingTextNodes.add(node);
+                }
+                translateInBatches(pendingTextNodes, batchSize);
+                pendingTextNodes.clear();
+            }, aggregationDelay);
+        });
+
+        mutationObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
     }
     //批量翻译
     translateInBatches = async (peddingNode: CustomNode[]) => {

@@ -41,6 +41,7 @@ chrome.runtime.onMessage.addListener((message: {
                         PageStateInstance = new PageState(promptText);
                         PageStateInstance.gatherTextNodes(document.body);
                         PageStateInstance.observerNode();
+                        PageStateInstance.watchForMutation();
                 };
         }
         // 处理右键菜单
