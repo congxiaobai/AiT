@@ -105,7 +105,7 @@ export default class PageState {
     // 使用一部分缓存节点
     handlerCacheNodes = (peddingNode: CustomNode[]) => {
         let unTransNode: CustomNode[] = [];
-        console.log({ '待翻译节点': peddingNode.map(s=>s._$id) })
+        console.log({ '待翻译节点': peddingNode.map(s => s._$id) })
 
         peddingNode.forEach(node => {
 
