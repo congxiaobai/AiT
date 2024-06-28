@@ -63,7 +63,10 @@ async function sparkTranslate(promptArray: any[], config: any, sendResponse: Fun
         try {
                 let total_res: string[] = []
                 const allRes: any = [];
-                const onEnd = () => sendResponse(allRes)
+                const onEnd = () => {
+                        console.log('spark请求', allRes);
+                        sendResponse(allRes)
+                }
                 const onMessage = (tmp: string) => {
                         for (let i = 0; i < tmp.length; i++) {
                                 if (tmp[i] === '{' && total_res.length === 0) {

@@ -48,7 +48,10 @@ async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Fu
 async function sparkTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
                 const allRes: any = [];
-                const onEnd = () => sendResponse(allRes)
+                const onEnd = () => {
+                        console.log('spark请求', allRes)
+                        sendResponse(allRes)
+                }
                 const onMessage = (tmp: string) => {
                         allRes.push(tmp)
                 }

@@ -13,7 +13,7 @@ export default class PageState {
     private allCacheTextNodes: CacheNode = {};
     private appendsNodes: Node[] = [];
     private observer: IntersectionObserver;
-    private batchSize = 6;
+    private batchSize = 10;
     private promptText: string;
     private currentURLKey: string;
     // private port = chrome.runtime.connect({ name: "content-to-background" });
@@ -22,6 +22,7 @@ export default class PageState {
         this.currentURLKey = 'cacheNoes&&' + window.location.href;
         chrome?.storage?.sync?.get([this.currentURLKey], (items) => {
             this.allCacheTextNodes = items[this.currentURLKey] || {};
+            console.log({ '获取缓存': this.allCacheTextNodes })
         })
         this.promptText = promptText;
         this.observer = new IntersectionObserver((entries: any) => {
@@ -104,13 +105,17 @@ export default class PageState {
     // 使用一部分缓存节点
     handlerCacheNodes = (peddingNode: CustomNode[]) => {
         let unTransNode: CustomNode[] = [];
+        console.log({ '待翻译节点': peddingNode.map(s=>s._$id) })
+
         peddingNode.forEach(node => {
+
             if (!node.textContent) {
                 return;
             }
             const cacheText = this.allCacheTextNodes[node.textContent]
             if (cacheText) {
                 this.addtranslateNode(node._$id, cacheText)
+                console.log({ '使用缓存': node._$id })
             } else {
                 unTransNode.push(node)
             }
@@ -158,18 +163,18 @@ export default class PageState {
             console.log('请求翻译的节点', batch.map(s => s.id).join(';'));
             chrome.runtime.sendMessage({
                 action: "loading", loading: true
-            }, () => { })
+            })
             chrome.runtime.sendMessage({
                 action: ChromeAction.TranslateNodeWithHttp,
                 promptText: this.promptText,
-                nodeArray: unTransNode,
+                nodeArray: batch,
             }, (res) => {
-                console.log({ res })
-                // chrome.runtime.sendMessage({
-                //     action: "loading", loading: false
-                // }, () => { })
+                console.log({ res });
+                chrome.runtime.sendMessage({
+                    action: "loading", loading: false
+                })
 
-                if (!res) {
+                if (!res || !Array.isArray(res)) {
                     return
                 }
                 res.forEach((item: { id: string, text: string }) => {
@@ -180,9 +185,9 @@ export default class PageState {
                         this.allCacheTextNodes[node.textContent] = text
                     }
                 })
-                // chrome?.storage?.sync?.set({
-                //     [this.currentURLKey]: this.allCacheTextNodes
-                // })
+                chrome?.storage?.sync?.set({
+                    [this.currentURLKey]: this.allCacheTextNodes
+                })
             })
         }
     }

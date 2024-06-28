@@ -19,12 +19,26 @@ export function getWebsocketUrl(apiKey: string, apiSecret: string): Promise<stri
     resolve(url)
   })
 }
-export const generateWs = async (promptArray: any, config: any, onEnd: Function, onMessage:Function) => {
+export const generateWs = async (promptArray: any, config: any, onEnd: Function, onMessage: Function) => {
   const url = await getWebsocketUrl(config.spark_apiKey, config.spark_apiSecret);
   const ttsWS = new WebSocket(url);
 
   ttsWS.onopen = () => {
     console.info('WS已连接')
+    var params = {
+      "header": {
+        "app_id": config.spark_appId, "uid": "fd3f47e4-d"
+      }, "parameter": {
+        "chat": {
+          "domain": modelDomain, "temperature": 0.5, "max_tokens": 8191
+        }
+      }, "payload": {
+        "message": {
+          "text": promptArray
+        }
+      }
+    }
+    ttsWS.send(JSON.stringify(params))
   }
   ttsWS.onclose = () => {
     console.info('WS已关闭')
@@ -46,20 +60,7 @@ export const generateWs = async (promptArray: any, config: any, onEnd: Function,
       onEnd()
     }
   }
-  var params = {
-    "header": {
-      "app_id": config.spark_appId, "uid": "fd3f47e4-d"
-    }, "parameter": {
-      "chat": {
-        "domain": modelDomain, "temperature": 0.5, "max_tokens": 8191
-      }
-    }, "payload": {
-      "message": {
-        "text": promptArray
-      }
-    }
-  }
-  ttsWS.send(JSON.stringify(params))
+
   return ttsWS;
 }
 
