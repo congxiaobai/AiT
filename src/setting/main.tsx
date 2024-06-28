@@ -140,6 +140,52 @@ export default function App() {
               <CardBody>
                 <Doubao></Doubao>
               </CardBody>
+              <CardFooter>
+                <div className="flex-col gap-2">
+                  <div> 申请指南</div>
+                  <div className="text-md text-default-500 p-1">
+                    1.{' '}
+                    <Link
+                      href="https://www.volcengine.com/product/doubao"
+                      isExternal={true}
+                    >
+                      点击这里
+                    </Link>
+                    右上角 '立即注册'
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    2.{' '}
+                    <Link
+                      href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey"
+                      isExternal={true}
+                    >
+                      点击这里
+                    </Link>
+                    进入控制台，并创建ApiKey
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    3.<Link
+                      href="https://console.volcengine.com/ark/region:ark+cn-beijing/openManagement"
+                      isExternal={true}
+                    >
+                      点击这里
+                    </Link>
+                    开通任意服务（这里可能会提示你进行实名认证，请完成认证）
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    4.<Link
+                      href="https://console.volcengine.com/ark/region:ark+cn-beijing/endpoint?current=1&pageSize=10"
+                      isExternal={true}
+                    >
+                      点击这里
+                    </Link>创建接入点。
+                  </div>
+                  <div className="text-md text-default-500 p-1">
+                    5.创建成功之后，可以复制接入点名称下方的ID。也是本插件需要的接入点配置。
+                  </div>
+                  <p>联系作者:congxiaobai1233@gmail.com</p>
+                </div>
+              </CardFooter>
             </Card>
           </Tab>
           <Tab
