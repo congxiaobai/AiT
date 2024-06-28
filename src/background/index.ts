@@ -65,10 +65,10 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse([])
+                                sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText)
+                        const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText,config)
                         const requestFn = LinesTranslate[config.transModal];
                         requestFn(promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
@@ -84,10 +84,10 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse([])
+                                sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText)
+                        const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText,config)
                         WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
                                 sendResponse(res)
@@ -104,10 +104,10 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse([])
+                                sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = payload.line ? generateCorrectLinePromot(payload.line) : generateWordSourcePromot(payload.word)
+                        const promptArray = payload.line ? generateCorrectLinePromot(payload.line,config) : generateWordSourcePromot(payload.word,config)
                         WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
                                 sendResponse(res)

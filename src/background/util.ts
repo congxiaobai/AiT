@@ -1,11 +1,14 @@
 import { NodeType } from "./type"
+import { sourceLangConfig } from '../constant'
 
-
-export const generateLinsModalPromot = (nodeArray: NodeType[], promptText: string) => {
+export const generateLinsModalPromot = (nodeArray: NodeType[], promptText: string, config: {
+  sourceLang: string,
+  targetLang: string
+}) => {
   return [
     {
       role: "system",
-      content: "你是一个翻译专家。尽量避免对一些术语进行翻译。"
+      content: `你是一个语言专家，精通${sourceLangConfig[config.sourceLang]||"英文"}译${sourceLangConfig[config.targetLang]||"中文"}。下面将会问一下翻译的问题，请尽量避免对一些术语进行翻译。并将结果以${sourceLangConfig[config.targetLang]||'中文'}输出。`
     },
     {
       role: "user",
@@ -16,30 +19,15 @@ export const generateLinsModalPromot = (nodeArray: NodeType[], promptText: strin
     }
   ]
 }
-export const generateSparkLinsModalPromot = (nodeArray: NodeType[], promptText: string) => {
-  return [{
-    "role": "user", "content":
-      `下面是一个数组,包含了id和text两个字段。
-                请忽略id,将text对应的英文，翻译成中文。然后依然按照数组的格式返回，
-                保持其中的字段不变，仅仅把英文替换成中文，使返回的结果能够被JSON反序列化。注意，id字段不要发生任何变化！
-                这些数组中的英文，来自于一篇完整的文章，翻译的时候，请前后结合起来翻译。` + `${promptText ? '注意，本文由以下特质，可以参考：' + promptText : ''}` + JSON.stringify(nodeArray)
-  }]
-}
-export const generateKimiLinsModalPromot = (nodeArray: NodeType[], promptText: string) => {
 
-}
-
-export const LinsModalPromotRecord: Record<string, (nodeArray: NodeType[], promptText: string) => any> = {
-  kimi: generateKimiLinsModalPromot,
-
-}
-
-
-export const generateWordModalPromot = (wordText: string, selectiontext: string) => {
+export const generateWordModalPromot = (wordText: string, selectiontext: string, config: {
+  sourceLang: string,
+  targetLang: string
+}) => {
   return [
     {
       role: "system",
-      content: "你是一个翻译专家。"
+      content: `你是一个语言专家，精通${sourceLangConfig[config.sourceLang]||"英文"}译${sourceLangConfig[config.targetLang]||"中文"}。下面将会问一下翻译的问题，请尽量避免对一些术语进行翻译。并将结果以${sourceLangConfig[config.targetLang]||'中文'}输出。`
     },
     {
       role: "user",
@@ -49,11 +37,15 @@ export const generateWordModalPromot = (wordText: string, selectiontext: string)
   ]
 }
 
-export const generateWordSourcePromot = (wordText: string,) => {
+export const generateWordSourcePromot = (wordText: string, config: {
+  sourceLang: string,
+  targetLang: string
+}) => {
+
   return [
     {
       role: "system",
-      content: "你是一个翻译专家。"
+      content: `你是一个语言专家，精通${sourceLangConfig[config.sourceLang]||"英文"}译${sourceLangConfig[config.targetLang]||"中文"}。下面将会问一下翻译的问题，请尽量避免对一些术语进行翻译。并将结果以${sourceLangConfig[config.targetLang]||'中文'}输出。`
     },
     {
       role: "user",
@@ -62,11 +54,16 @@ export const generateWordSourcePromot = (wordText: string,) => {
   ]
 }
 
-export const generateCorrectLinePromot = (line: string) => {
+export const generateCorrectLinePromot = (line: string ,config: {
+  sourceLang: string,
+  targetLang: string
+}) => {
+  
   return [
     {
       role: "system",
-      content: "你是一个英语老师"
+      content: `你是一个语言专家，精通${sourceLangConfig[config.sourceLang]||"英文"}译${sourceLangConfig[config.targetLang]||"中文"}。下面将会问一下翻译的问题，请尽量避免对一些术语进行翻译。并将结果以${sourceLangConfig[config.targetLang]||'中文'}输出。`
+
     },
     {
       role: "user",

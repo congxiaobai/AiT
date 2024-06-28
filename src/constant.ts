@@ -6,6 +6,15 @@ export const sourceLangOptions = [
     { label: "德文", value: "de" }
 ]
 
+export const sourceLangConfig ={
+    en:'英文',
+    ja:'日文',
+    fr:'法文',
+    de:'德文',
+    zh:'中文'
+} 
+
+
 export const aiModalOptions = [
     { label: "星火3.5", value: "spark" },
     { label: "Kimi", value: "kimi" },

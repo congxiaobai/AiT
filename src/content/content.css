@@ -14,6 +14,17 @@
     animation: circle infinite 0.75s linear;
 }
 
+.translate_error {
+    cursor: pointer;
+    height: 10px;
+    border: 1px solid ;
+    border-radius: 4px;
+    padding: 2px;
+    display: inline-block;
+    color: #F05252;
+    font-size: 10px;
+}
+
 @keyframes circle {
     0% {
         transform: rotate(0);

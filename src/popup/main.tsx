@@ -36,9 +36,9 @@ const App = () => {
         loading: request.loading,
       });
       setBtnLoading(request.loading);
-      
+
     }
-    
+
     return;
   });
   useEffect(() => {
@@ -91,6 +91,7 @@ const App = () => {
       if (!tabs[0]) {
         return;
       }
+      setBtnLoading(true);
       chrome.tabs.sendMessage(
         tabs[0].id,
         {
@@ -101,7 +102,9 @@ const App = () => {
             targetLang,
           },
         },
-        () => {},
+        () => {
+
+        },
       );
     });
   }, 200);

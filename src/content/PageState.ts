@@ -1,4 +1,4 @@
-import { debounce } from "lodash";
+import { debounce, throttle } from "lodash";
 import { CacheNode, CustomNode } from "./type";
 import { generateUUID, insertAfter, isElementNode, istextNode } from "./util";
 import { ChromeAction } from "../constant";
@@ -75,6 +75,10 @@ export default class PageState {
     //批量翻译
     translateInBatches = async (peddingNode: CustomNode[]) => {
         let unTransNode: CustomNode[] = this.handlerCacheNodes(peddingNode)
+        if (unTransNode.length === 0) {
+            this.checkExistDoing()
+            return
+        }
         const toTranslateNode = unTransNode.map(node => {
             node._$translate = 'doing';
             const newNode = document.createElement('p');
@@ -156,6 +160,54 @@ export default class PageState {
         const inNode = this.loadingNode.find(n => n._$id === id);
         inNode && (inNode as any).remove()
     }
+    checkExistDoing = () => {
+        if (!this.allTextNodes.find(n => n._$translate === 'doing')) {
+            chrome.runtime.sendMessage({
+                action: "loading", loading: false
+            })
+        }
+    }
+
+    handlerRetry = () => {
+        const errNodes = this.loadingNode.filter(n => n._$translate === 'error');
+        if (errNodes.length > 0) {
+            const toTranslateNode = errNodes.map(node => {
+                node._$translate = 'doing';
+                const errorPendNode = this.appendsNodes.find(s => s._$id === node._$id)
+                if (errorPendNode) {
+                    errorPendNode.remove();
+                }
+                const newNode = document.createElement('p');
+                (newNode as any)._$id = node._$id;
+                newNode.classList.add('translate_loading');
+                (newNode as any).style.opacity = 0.6;
+                insertAfter(newNode, node);
+                this.loadingNode.push(newNode as any);
+                return {
+                    id: node._$id,
+                    text: node.textContent || '',
+                }
+            })
+            this.translateWithHttp(toTranslateNode)
+        }
+    }
+    handerErrors = (unTransNode: { id: string, text: string }[], err: string) => {
+        unTransNode.forEach(node => {
+            const inNode: any = this.loadingNode.find(n => n._$id === node.id);
+            const originNode = this.allTextNodes.find(n => n._$id === node.id);
+            if (originNode) {
+                originNode._$translate = 'error';
+            }
+            if (inNode) {
+                inNode.classList.remove('translate_loading');
+                inNode.classList.add('translate_error');
+                inNode.textContent = (err || '异常') + `点击重试`;
+                inNode.addEventListener('click', throttle(() => {
+                    this.handlerRetry()
+                }), 100)
+            }
+        })
+    }
     // 使用HTTP进行翻译
     translateWithHttp = (unTransNode: { id: string, text: string }[]) => {
         for (let i = 0; i < unTransNode.length; i += this.batchSize) {
@@ -170,11 +222,9 @@ export default class PageState {
                 nodeArray: batch,
             }, (res) => {
                 console.log({ res });
-                chrome.runtime.sendMessage({
-                    action: "loading", loading: false
-                })
-
                 if (!res || !Array.isArray(res)) {
+                    this.handerErrors(unTransNode, res)
+                    this.checkExistDoing()
                     return
                 }
                 res.forEach((item: { id: string, text: string }) => {
@@ -185,6 +235,7 @@ export default class PageState {
                         this.allCacheTextNodes[node.textContent] = text
                     }
                 })
+                this.checkExistDoing()
                 chrome?.storage?.sync?.set({
                     [this.currentURLKey]: this.allCacheTextNodes
                 })
