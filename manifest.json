@@ -5,12 +5,10 @@
   "description": "基于国内大模型实现的沉浸式翻译插件，支持星火，通义，kimi",
   "permissions": [
     "<all_urls>",
-
     "tabs",
     "storage",
     "contextMenus"
   ],
-
   "options_page": "setting.html",
   "content_scripts": [
     {
@@ -22,7 +20,9 @@
       "js": [
         "content.js"
       ],
-      "css": ["content.css"]
+      "css": [
+        "content.css"
+      ]
     }
   ],
   "background": {
@@ -31,23 +31,26 @@
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "16": "logo.png",
-      "48": "logo.png",
-      "128": "logo.png"
+      "16": "logo-16.png",
+      "48": "logo-48.png",
+      "128": "logo-128.png"
     }
   },
   "web_accessible_resources": [
     {
       "resources": [
         "index.css",
-        "logo.png",
+        "logo-16.png",
+        "logo-48.png",
+        "logo-128.png",
         "arrow.svg"
       ],
       "matches": []
     }
-    
   ],
   "icons": {
-    "16": "logo.png"
+    "16": "logo-16.png",
+    "48": "logo-48.png",
+    "128": "logo-128.png"
   }
 }
