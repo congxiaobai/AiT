@@ -67,6 +67,7 @@ export default (promptArray: {
                             if (tmp[i] === '}' && allMessage[0] === '{') {
                                 allMessage.push('}')
                                 onResult(allMessage.join(''));
+                                console.log({ allMessage: allMessage.join('') })
                                 allMessage = [];
                                 continue;
                             }
@@ -80,7 +81,7 @@ export default (promptArray: {
             }
 
             // 继续读取流
-            return reader.read().then(processStream as any) ;
+            return reader.read().then(processStream as any);
         }
         return reader.read().then(processStream as any);
     }).catch(err => {

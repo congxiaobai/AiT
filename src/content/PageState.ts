@@ -59,7 +59,9 @@ export default class PageState {
                 }
                 let id = generateUUID();
                 (node as any)._$id = id;
-                (node as any)._$translate = 'todo'
+                (node as any)._$translate = 'todo';
+           
+
                 this.allTextNodes.push(node as any)
             } else if (isElementNode(node as Element)) {
                 this.gatherTextNodes(node);
@@ -215,15 +217,16 @@ export default class PageState {
     }
 
     changeModal = (toTranslateNode: any) => {
-        chrome?.storage?.sync?.get(['trans_modal'], (transModal) => {
-            if (['tongyi', 'spark'].includes(transModal.trans_modal)) {
-                this.translateWithStream(toTranslateNode)
 
-            } else {
-                this.translateWithHttp(toTranslateNode)
-            }
-        }
-        )
+        this.translateWithHttp(toTranslateNode)
+        // // chrome?.storage?.sync?.get(['trans_modal'], (transModal) => {
+        // //     if ([ 'tongyi','spark'].includes(transModal.trans_modal)) {
+        // //         this.translateWithStream(toTranslateNode)
+        // //     } else {
+
+        // //     }
+        // // }
+        // )
     }
     handerErrors = (unTransNode: { id: string, text: string }[], err: string) => {
         unTransNode.forEach(node => {

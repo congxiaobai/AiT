@@ -22,10 +22,12 @@ export function generateUUID() {
 }
 
 export function istextNode(node: Node) {
-    return (node as Element).tagName && ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre'].includes((node as Element).tagName.toLowerCase())
+    return (node as Element).tagName && ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes((node as Element).tagName.toLowerCase())
 }
 export function isElementNode(node: Element) {
-    return node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', '#comment', '#cdata-section', 'FOOTER', 'HEADER'].includes(node.nodeName)
+    return node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', 'IMG', 
+    
+    '#comment', '#cdata-section', 'FOOTER', 'HEADER', 'CODE'].includes(node.nodeName)
 }
 export function findPNode(node: Node) {
     if (!istextNode(node) && node.parentNode) {

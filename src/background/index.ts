@@ -49,8 +49,8 @@ chrome.runtime.onConnect.addListener(function (port) {
                                 const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText, config)
                                 const requestFn = LinesTranslateStream[config.transModal];
                                 requestFn(promptArray, config.modalConfig, (res: any) => {
-                                        console.log('stream', { res: JSON.parse(res) })
-                                        port.postMessage(JSON.parse(res));
+                                        console.log('stream', { res })
+                                        port.postMessage(res);
                                 })
                         })
                 }
