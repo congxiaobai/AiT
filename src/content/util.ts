@@ -27,7 +27,7 @@ export function istextNode(node: Node) {
 export function isElementNode(node: Element) {
     return node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', 'IMG', 
     
-    '#comment', '#cdata-section', 'FOOTER', 'HEADER', 'CODE'].includes(node.nodeName)
+    '#comment', '#cdata-section', 'FOOTER',  'CODE'].includes(node.nodeName)
 }
 export function findPNode(node: Node) {
     if (!istextNode(node) && node.parentNode) {
