@@ -52,7 +52,6 @@ export default (promptArray: {
                 try {
                     // 将找到的字符串解析为JSON对象
                     const jsonData = JSON.parse(jsonString);
-
                     // 从JSON对象中提取content字段的值
                     const tmp = jsonData.output.choices[0].message.content;
                     if (tmp) {

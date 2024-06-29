@@ -1,36 +1,24 @@
 
-import TongYiConnect from './PipeRequest/TongYi';
+import TongYiConnect from '../StreamRequest/TongYi';
+import DoubaoConnect from '../StreamRequest/Doubao';
 
-import { generateWs } from './HttpRequest/Spark';
+import { generateWs } from '../HttpRequest/Spark';
+import { RunStepsPage } from 'openai/resources/beta/threads/runs/steps';
 const jsonPattern = /```json\n([\s\S]*?)\n```/
-export const LinesTranslatePipe: {
+export const LinesTranslateStream: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
 } = {
         tongyi: tongyiTranslate,
         spark: sparkTranslate,
-
-
+        doubao: doubaoTranslate
 }
 
 async function doubaoTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
                 const onResult = (response: any) => {
-                        if (response?.data?.output?.choices) {
-                                const allRes = response.data.output.choices.map(s => s.message?.content).join('')
-                                const match = jsonPattern.exec(allRes);
-                                if (match) {
-                                        // 提取并解析JSON字符串
-                                        const jsonString = match[1];
-                                        const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-
-                                        sendResponse(JSON.parse(jsonData))
-
-                                }
-                        } else {
-                                sendResponse([])
-                        }
+                        sendResponse(response)
                 }
-                TongYiConnect(promptArray, config, onResult)
+                DoubaoConnect(promptArray, config, onResult)
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
@@ -40,20 +28,7 @@ async function doubaoTranslate(promptArray: any[], config: any, sendResponse: Fu
 async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
                 const onResult = (response: any) => {
-                        if (response?.data?.output?.choices) {
-                                const allRes = response.data.output.choices.map(s => s.message?.content).join('')
-                                const match = jsonPattern.exec(allRes);
-                                if (match) {
-                                        // 提取并解析JSON字符串
-                                        const jsonString = match[1];
-                                        const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-
-                                        sendResponse(JSON.parse(jsonData))
-
-                                }
-                        } else {
-                                sendResponse([])
-                        }
+                        sendResponse(response)
                 }
                 TongYiConnect(promptArray, config, onResult)
 
@@ -90,7 +65,7 @@ async function sparkTranslate(promptArray: any[], config: any, sendResponse: Fun
                 await generateWs(promptArray, config, onEnd, onMessage)
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                sendResponse()
+                sendResponse('异常')
                 return
         }
 }

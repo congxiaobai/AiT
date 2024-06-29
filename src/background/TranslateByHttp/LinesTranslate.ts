@@ -1,8 +1,8 @@
 
-import TongYiConnect from './HttpRequest/TongYi';
-import { generateWs } from './HttpRequest/Spark';
-import KimiConnect from './HttpRequest/Kimi';
-import DouBaoConnect from './HttpRequest/Doubao';
+import TongYiConnect from '../HttpRequest/TongYi';
+import { generateWs } from '../HttpRequest/Spark';
+import KimiConnect from '../HttpRequest/Kimi';
+import DouBaoConnect from '../HttpRequest/Doubao';
 const jsonPattern = /```json\n([\s\S]*?)\n```/
 export const LinesTranslate: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>

@@ -1,8 +1,8 @@
 
-import TongYiConnect from './HttpRequest/TongYi';
-import { generateWs } from './HttpRequest/Spark';
-import KimiConnect from './HttpRequest/Kimi';
-import DoubaoConnect from './HttpRequest/Doubao';
+import TongYiConnect from '../HttpRequest/TongYi';
+import { generateWs } from '../HttpRequest/Spark';
+import KimiConnect from '../HttpRequest/Kimi';
+import DoubaoConnect from '../HttpRequest/Doubao';
 export const WordTranslate: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
 } = {

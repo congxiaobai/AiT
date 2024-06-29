@@ -1,13 +1,13 @@
 // import CryptoJS from 'crypto-js';
 
-import { LinesTranslate } from './LinesTranslate'
+import { LinesTranslate } from './TranslateByHttp/LinesTranslate'
 
-import { WordTranslate } from './WordTranslate'
-import TongYiConnecStream from './PipeRequest/TongYi'
+import { WordTranslate } from './TranslateByHttp/WordTranslate'
+import TongYiConnecStream from './StreamRequest/TongYi'
 import { ChromeAction } from '../constant';
 import { BackgroundChromRequestType, LinesRequestType, WordCardType, WordRequestType } from './type';
 import { generateCorrectLinePromot, generateLinsModalPromot, generateWordModalPromot, generateWordSourcePromot } from './util';
-import { LinesTranslatePipe } from './LinesTranslatePipe';
+import { LinesTranslateStream } from './TranslateByStream/LinesTranslate';
 
 chrome.runtime.onInstalled.addListener(() => {
         chrome.contextMenus.create({
@@ -37,24 +37,29 @@ const TransConfig: {
 }
 
 //使用长连接通信
-// chrome.runtime.onConnect.addListener(function (port) {
-//         console.assert(port.name === "content-to-background");
-//         port.onMessage.addListener(function (message) {
-//                 if (message.action === 'translateContent') {
-//                         chrome?.storage?.sync?.get(['tongyi_apiKey'], (config) => {
-//                                 if (config) {
-//                                         TongYiConnecStream(message.text, config, message.promtText, (res) => {
-//                                                 port.postMessage(JSON.parse(res));
-//                                         })
-//                                 }
-//                         })
-//                 }
-//         });
+chrome.runtime.onConnect.addListener(function (port) {
+        console.assert(port.name === "content-to-background");
+        port.onMessage.addListener(function (request) {
+                if (request.action === ChromeAction.TranslateNodeWithPort) {
+                        const nodeArray = (request as LinesRequestType).nodeArray;
+                        getModalAndConfig((config: any) => {
+                                if (!config) {
+                                        return
+                                }
+                                const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText, config)
+                                const requestFn = LinesTranslateStream[config.transModal];
+                                requestFn(promptArray, config.modalConfig, (res: any) => {
+                                        console.log('stream', { res: JSON.parse(res) })
+                                        port.postMessage(JSON.parse(res));
+                                })
+                        })
+                }
+        });
 
-//         port.onDisconnect.addListener(function () {
-//                 console.log("Content script disconnected.");
-//         });
-// });
+        port.onDisconnect.addListener(function () {
+                console.log("Content script disconnected.");
+        });
+});
 
 chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sender, sendResponse) => {
         if (request.action === ChromeAction.TranslateNodeWithHttp) {
@@ -68,7 +73,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                 sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText,config)
+                        const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText, config)
                         const requestFn = LinesTranslate[config.transModal];
                         requestFn(promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
@@ -87,7 +92,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                 sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText,config)
+                        const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText, config)
                         WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
                                 sendResponse(res)
@@ -107,7 +112,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                                 sendResponse('没有配置Ai模型')
                                 return
                         }
-                        const promptArray = payload.line ? generateCorrectLinePromot(payload.line,config) : generateWordSourcePromot(payload.word,config)
+                        const promptArray = payload.line ? generateCorrectLinePromot(payload.line, config) : generateWordSourcePromot(payload.word, config)
                         WordTranslate[config.transModal](promptArray, config.modalConfig, (res: any) => {
                                 console.log(res)
                                 sendResponse(res)

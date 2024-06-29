@@ -17,7 +17,7 @@ export default class PageState {
     private batchSize = 10;
     private promptText: string;
     private currentURLKey: string;
-    // private port = chrome.runtime.connect({ name: "content-to-background" });
+    private port = chrome.runtime.connect({ name: "content-to-background" });
 
     constructor(promptText: string) {
         this.currentURLKey = 'cacheNoes&&' + window.location.href;
@@ -80,26 +80,12 @@ export default class PageState {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
                         if (isElementNode(node as Element)) {
-                            this.gatherTextNodes(node)  
+                            this.gatherTextNodes(node)
                         }
                     });
                     this.observerNode()
                 }
             });
-
-            if (aggregationTimeout) {
-                clearTimeout(aggregationTimeout);
-            }
-
-            aggregationTimeout = setTimeout(() => {
-                while (textNodeQueue.size > 0) {
-                    const node = textNodeQueue.values().next().value;
-                    textNodeQueue.delete(node);
-                    pendingTextNodes.add(node);
-                }
-                translateInBatches(pendingTextNodes, batchSize);
-                pendingTextNodes.clear();
-            }, aggregationDelay);
         });
 
         mutationObserver.observe(document.body, {
@@ -127,8 +113,8 @@ export default class PageState {
                 text: node.textContent || '',
             }
         })
-        this.translateWithHttp(toTranslateNode)
-        // this.translateWithPipe(toTranslateNode)
+        this.changeModal(toTranslateNode)
+        //this.translateWithHttp(toTranslateNode)
     }
     // 使用流式HTTP请求
     translateWithPipe = (toTranslateNode: { id: string, text: string }[]) => {
@@ -223,8 +209,21 @@ export default class PageState {
                     text: node.textContent || '',
                 }
             })
-            this.translateWithHttp(toTranslateNode)
+            this.changeModal(toTranslateNode)
+
         }
+    }
+
+    changeModal = (toTranslateNode: any) => {
+        chrome?.storage?.sync?.get(['trans_modal'], (transModal) => {
+            if (['tongyi', 'spark'].includes(transModal.trans_modal)) {
+                this.translateWithStream(toTranslateNode)
+
+            } else {
+                this.translateWithHttp(toTranslateNode)
+            }
+        }
+        )
     }
     handerErrors = (unTransNode: { id: string, text: string }[], err: string) => {
         unTransNode.forEach(node => {
@@ -278,20 +277,30 @@ export default class PageState {
         }
     }
     //使用长连接翻译
-    streamTranslate = (unTransNode: { id: string, text: string }[]) => {
-        // this.port.postMessage(
-        //     {
-        //         action: ChromeAction.TranslateNodeWithPort,
-        //         promptText: this.promptText,
-        //         nodeArray: unTransNode
-        //     }
-        // );
-        // this.port.onMessage.addListener((message: { id: string, text: string }) => {
-        //     if (!message.id) {
-        //         return
-        //     }
-        //     this.addtranslateNode(message.id, message.text)
-        // });
+    translateWithStream = (unTransNode: { id: string, text: string }[]) => {
+        this.port.postMessage(
+            {
+                action: ChromeAction.TranslateNodeWithPort,
+                promptText: this.promptText,
+                nodeArray: unTransNode
+            }
+        );
+        this.port.onMessage.addListener((message: { id: string, text: string }) => {
+            if (!message.id) {
+                this.checkExistDoing()
+                return
+            }
+            const { id, text } = message;
+            this.addtranslateNode(id, text)
+            const node = this.allTextNodes.find(n => n._$id === id);
+            if (node && node.textContent) {
+                this.allCacheTextNodes[node.textContent] = text
+            }
+            this.checkExistDoing()
+            chrome?.storage?.sync?.set({
+                [this.currentURLKey]: this.allCacheTextNodes
+            })
+        });
     }
 }
 
