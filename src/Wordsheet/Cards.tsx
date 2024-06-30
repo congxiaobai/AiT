@@ -22,9 +22,13 @@ export default (props: WordType & { onChangData: Function }) => {
     }, function (response) {
       setLoading(false)
       if (response) {
-        updateWordSource(word, response)
+        let res = response
+        if (Array.isArray(response)) {
+          res = response.join('')
+        }
+        updateWordSource(word, res)
         onChangData({
-          word, lines, translated, count, wordSource: response
+          word, lines, translated, count, wordSource: res
         })
       }
 

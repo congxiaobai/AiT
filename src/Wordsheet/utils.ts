@@ -69,11 +69,11 @@ export function updateWordSource(word: string, wordSource: string,) {
   // 获取特定键的值
   const wordKey = '*word*' + word;
   chrome.storage.local.get([wordKey], function (result) {
-    if (result.count) {
-      result.wordSource = wordSource
+    if (result[wordKey].count) {
+      result[wordKey].wordSource = wordSource
     }
     chrome.storage.local.set({
-      [wordKey]: result
+      [wordKey]: result[wordKey]
     }, () => console.log('setValue'))
   })
 }
