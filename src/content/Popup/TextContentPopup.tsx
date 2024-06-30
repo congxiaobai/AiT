@@ -28,10 +28,10 @@ function Popup(props: {
     <NextUIProvider>
       <div style={{
         position: 'fixed',
-        background: 'black',
         width: 400,
-        padding: 10
-      }}>
+        padding: 10,
+
+      }} className='bg-stone-200 rounded-lg'>
         <div style={{
           display: 'flex',
 

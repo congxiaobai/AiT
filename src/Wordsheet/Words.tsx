@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Table, TableHeader, TableColumn, Switch, Input, TableBody, Spinner, TableRow, TableCell, Pagination, Button, SortDescriptor } from "@nextui-org/react";
 import { DeleteIcon } from './Icon'
 import { exportToExcel } from "./utils";
@@ -7,7 +7,7 @@ import Cards from "./Cards";
 import { WordType } from "./WordType";
 export default () => {
     const [page, setPage] = React.useState(1);
-    const [wordCard, setWordCard] = React.useState(true);
+    const [wordCard, setWordCard] = React.useState(false);
     const [params, setParams] = React.useState({
         word: '',
         line: ''
@@ -15,7 +15,6 @@ export default () => {
     const ref = React.useRef<WordType[]>([]);
     const [dataSource, setDataSource] = React.useState<WordType[]>([]);
     const [sortDescriptor, sesortDescriptor] = React.useState<SortDescriptor>();
-    const rowsPerPage = wordCard ? 1 : 10;
     const [isLoading, setIsLoading] = React.useState(false);
 
 
@@ -27,7 +26,7 @@ export default () => {
                 let filteredItems: any = [];
 
                 for (let key in items) {
-                    if (key.startsWith('*word*')) {
+                    if (key.startsWith('*word*') && items[key].word) {
                         filteredItems.push(items[key]);
                     }
                 }
@@ -78,14 +77,20 @@ export default () => {
         }
         return cellValue;
     }, [])
-    const pages = Math.ceil(dataSource.length / rowsPerPage);
+    const rowsPerPage = useMemo(() => {
+        return wordCard ? 1 : 10;
+    }, [wordCard])
+
+    const pages = useMemo(() => {
+        return Math.ceil(dataSource.length / rowsPerPage);
+    }, [dataSource, rowsPerPage])
 
     const items = React.useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
         return dataSource.slice(start, end);
-    }, [page, dataSource]);
+    }, [page, dataSource, rowsPerPage]);
 
     const exportExcel = () => {
         exportToExcel(dataSource)
@@ -148,7 +153,7 @@ export default () => {
                 <div className="flex justify-center items-center gap-4  mt-40 flex-col flex-grow-0 width-full">
                     {items.map((s) => <Cards key={s.word}
                         onChangData={changeRow}
-                        wordSource ={s.wordSource}
+                        wordSource={s.wordSource}
                         count={s.count} word={s.word} lines={s.lines} translated={s.translated} />)}
 
                     <Pagination

@@ -47,7 +47,7 @@ export default (props: WordType & { onChangData: Function }) => {
     <Card
       isFooterBlurred
       radius="lg"
-      className="min-w-max"
+      className="min-w-96	 max-w-4xl"
     >
       <CardHeader>
         <div className="flex-1"></div>

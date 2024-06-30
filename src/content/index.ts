@@ -12,6 +12,9 @@ if (document.readyState !== 'loading') {
         setTimeout(() => detecLang());
 } else {
         document.addEventListener('DOMContentLoaded', function () {
+                chrome.runtime.sendMessage({
+                        action: "loading", loading: false
+                    })
                 setTimeout(() => detecLang());
                 clearChache();
         });
