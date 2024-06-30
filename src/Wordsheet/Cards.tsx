@@ -10,8 +10,7 @@ export default (props: WordType & { onChangData: Function }) => {
 
   const [loading, setLoading] = useState(false)
   const [corret, setCorret] = useState('')
-
-
+  
   const requestWordSource = async () => {
     setLoading(true)
 
