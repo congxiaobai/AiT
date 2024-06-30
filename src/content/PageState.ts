@@ -60,7 +60,7 @@ export default class PageState {
                 let id = generateUUID();
                 (node as any)._$id = id;
                 (node as any)._$translate = 'todo';
-           
+
 
                 this.allTextNodes.push(node as any)
             } else if (isElementNode(node as Element)) {
@@ -238,13 +238,14 @@ export default class PageState {
             if (inNode) {
                 inNode.classList.remove('translate_loading');
                 inNode.classList.add('translate_error');
-                inNode.textContent = (err || '异常') + `点击重试`;
+                inNode.textContent = `异常，可能是配置问题或者网络问题，点击重试`;
                 inNode.addEventListener('click', throttle(() => {
                     this.handlerRetry()
                 }), 100)
             }
         })
     }
+
     // 使用HTTP进行翻译
     translateWithHttp = (unTransNode: { id: string, text: string }[]) => {
         for (let i = 0; i < unTransNode.length; i += this.batchSize) {
@@ -256,21 +257,31 @@ export default class PageState {
             chrome.runtime.sendMessage({
                 action: ChromeAction.TranslateNodeWithHttp,
                 promptText: this.promptText,
-                nodeArray: batch,
-            }, (res) => {
-                console.log({ res });
-                if (!res || !Array.isArray(res)) {
-                    this.handerErrors(unTransNode, res)
+                nodeArray: batch.map(s => s.text.replaceAll(/[\n\r]/g, '').replaceAll("[", '【').replaceAll("]", "】")),
+            }, (responese) => {
+                console.log({ responese });
+                if (!responese || responese === 'error') {
+                    this.handerErrors(unTransNode, responese)
                     this.checkExistDoing()
                     return
                 }
-                res.forEach((item: { id: string, text: string }) => {
-                    const { id, text } = item;
-                    this.addtranslateNode(id, text)
-                    const node = this.allTextNodes.find(n => n._$id === id);
-                    if (node && node.textContent) {
-                        this.allCacheTextNodes[node.textContent] = text
+                let res = responese;
+                if (!Array.isArray(responese)) {
+                    res = [responese]
+                }
+                batch.forEach((item: { id: string, text: string }, index: number) => {
+                    const { id } = item;
+                    const text = res[index] || 'error'
+                    if (text === 'error') {
+                        this.handerErrors([batch[index]], text)
+                    } else {
+                        this.addtranslateNode(id, text)
+                        const node = this.allTextNodes.find(n => n._$id === id);
+                        if (node && node.textContent) {
+                            this.allCacheTextNodes[node.textContent] = text
+                        }
                     }
+
                 })
                 this.checkExistDoing()
                 chrome?.storage?.sync?.set({

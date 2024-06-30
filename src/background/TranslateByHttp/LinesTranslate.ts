@@ -3,7 +3,7 @@ import TongYiConnect from '../HttpRequest/TongYi';
 import { generateWs } from '../HttpRequest/Spark';
 import KimiConnect from '../HttpRequest/Kimi';
 import DouBaoConnect from '../HttpRequest/Doubao';
-const jsonPattern = /```json\n([\s\S]*?)\n```/
+const regex = /\[([\s\S]*?)\]/; // 正则表达式，匹配以 "[" 开头，以 "]" 结尾的内容，非贪婪匹配
 export const LinesTranslate: {
         [key: string]: (promptArray: any[], config: any, sendResponse: Function) => Promise<void>
 } = {
@@ -19,17 +19,14 @@ async function doubaoConnect(promptArray: any[], config: any, sendResponse: Func
 
                 if (response?.data?.choices) {
                         const allRes = response.data.choices.map(s => s.message?.content).join('')
-                        const jsonData = JSON.parse(allRes.replace(/'/g, '"'));
-                        console.log({ jsonData })
-                        sendResponse(jsonData)
-
+                        sendResponse(jsonParse(allRes))
                 } else {
                         sendResponse(['error'])
                 }
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                sendResponse(['error'])
+                sendResponse('error')
                 return
         }
 }
@@ -39,21 +36,16 @@ async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Fu
 
                 if (response?.data?.output?.choices) {
                         const allRes = response.data.output.choices.map(s => s.message?.content).join('')
-                        const match = jsonPattern.exec(allRes);
-                        if (match) {
-                                // 提取并解析JSON字符串
-                                const jsonString = match[1];
-                                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-                                console.log({ jsonData })
-                                sendResponse(jsonData)
-                        }
+                        sendResponse(jsonParse(allRes))
+
+
                 } else {
                         sendResponse(['error'])
                 }
 
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                sendResponse(['error'])
+                sendResponse('error')
                 return
         }
 }
@@ -61,35 +53,19 @@ async function tongyiTranslate(promptArray: any[], config: any, sendResponse: Fu
 async function sparkTranslate(promptArray: any[], config: any, sendResponse: Function) {
 
         try {
-                let total_res: string[] = []
-                const allRes: any = [];
+                let total_res: string = ''
                 const onEnd = () => {
-                        console.log('spark请求', allRes);
-                        sendResponse(allRes)
+                        sendResponse(jsonParse(total_res))
+
+
                 }
                 const onMessage = (tmp: string) => {
-                        for (let i = 0; i < tmp.length; i++) {
-                                if (tmp[i] === '{' && total_res.length === 0) {
-                                        total_res.push('{')
-                                        continue;
-                                }
-                                if (total_res[0] === '{' && tmp[i] !== '}') {
-                                        total_res.push(tmp[i]);
-                                        continue;
-                                }
-                                if (tmp[i] === '}' && total_res[0] === '{') {
-                                        total_res.push('}')
-                                        allRes.push(JSON.parse(total_res.join('')))
-
-                                        total_res = [];
-                                        continue;
-                                }
-                        }
+                        total_res += tmp
                 }
                 await generateWs(promptArray, config, onEnd, onMessage)
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
-                sendResponse()
+                sendResponse('error')
                 return
         }
 }
@@ -97,11 +73,23 @@ async function sparkTranslate(promptArray: any[], config: any, sendResponse: Fun
 
 async function kimiTranslate(promptArray: any[], config: any, sendResponse: Function) {
         try {
-                const onEnd = (res: any) => sendResponse(res)
-                await KimiConnect(promptArray, config, onEnd)
+
+                const allRes = await KimiConnect(promptArray, config);
+                sendResponse(jsonParse(allRes))
         } catch (error) {
                 console.error('Error parsing the translated text:', error);
                 sendResponse()
                 return
+        }
+}
+
+const jsonParse = (allRes: string) => {
+        const matchResult = allRes.match(regex); // 使用match方法查找匹配项
+
+        if (matchResult) {
+                const arrayStr = matchResult[1]; // 获取完整的匹配内容，包含 [ 和 ]
+                return JSON.parse(`[${arrayStr}]`)
+        } else {
+                return [allRes]
         }
 }

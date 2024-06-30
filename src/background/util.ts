@@ -12,9 +12,9 @@ export const generateLinsModalPromot = (nodeArray: NodeType[], promptText: strin
     },
     {
       role: "user",
-      content: `下面是一个数组,数组中的对象包含了id和text两个字段。将text对应的文本进行翻译，请尽量避免对一些术语进行翻译。
-        然后依然按照数组的格式返回，数组中的对象要有id和text两个字段,其中id保持不变，text则为翻译后的文本。
-        翻译的时候，请前后结合上下文翻译。仅返回数据结构即可，不要任何注释。` + `${promptText ? '注意，本文由以下特质，可以参考：' + promptText : ''}` + JSON.stringify(nodeArray)
+      content: `下面是一个数组,里面的文本是${sourceLangConfig[config.sourceLang] || "英文"},请翻译为${sourceLangConfig[config.targetLang] || "中文"}，同时尽量避免对一些专有的单词进行翻译。
+        然后依然按照数组的格式返回，数组索引需要保持一致，且保证返回数据可以被JSON化。除此之外，不要返回任何注释或者说明的文字。
+        ` + `${promptText ? '注意，本文由以下特质，可以参考：' + promptText : ''}` + JSON.stringify(nodeArray)
     }
   ]
 }
