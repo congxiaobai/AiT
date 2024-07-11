@@ -106,7 +106,7 @@ export default class PageState {
             node._$translate = 'doing';
             const newNode = document.createElement('p');
             (newNode as any)._$id = node._$id;
-            newNode.classList.add('translate_loading');
+            newNode.classList.add('ait_translate_loading');
             (newNode as any).style.opacity = 0.6;
             insertAfter(newNode, node);
             this.loadingNode.push(newNode as any);
