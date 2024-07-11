@@ -70,7 +70,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse('没有配置Ai模型')
+                                sendResponse('您还没有配置Ai模型，请先配置')
                                 return
                         }
                         const promptArray = generateLinsModalPromot(nodeArray, (request as LinesRequestType).promptText, config)
@@ -89,7 +89,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse('没有配置Ai模型')
+                                sendResponse('您还没有配置Ai模型，请先配置')
                                 return
                         }
                         const promptArray = generateWordModalPromot(wordText, (request as WordRequestType).selectionText, config)
@@ -109,7 +109,7 @@ chrome.runtime.onMessage.addListener((request: BackgroundChromRequestType, sende
                 }
                 getModalAndConfig((config: any) => {
                         if (!config) {
-                                sendResponse('没有配置Ai模型')
+                                sendResponse('您还没有配置Ai模型，请先配置')
                                 return
                         }
                         const promptArray = payload.line ? generateCorrectLinePromot(payload.line, config) : generateWordSourcePromot(payload.word, config)

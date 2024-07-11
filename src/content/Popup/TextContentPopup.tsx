@@ -1,54 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { NextUIProvider, } from '@nextui-org/react';
-import { Textarea } from "@nextui-org/react";
+
+import { Textarea } from '@nextui-org/react';
 import { ChromeAction } from '../../constant';
-import { addFavoriteWords } from './FavoriteWords'
-function Popup(props: {
-  selectionText: string,
-  wordText: string
-}) {
-  const [content, setContent] = useState('')
+import { addFavoriteWords } from './FavoriteWords';
+import '../content.css';
+function Popup(props: { selectionText: string; wordText: string }) {
+  const [content, setContent] = useState('');
   useEffect(() => {
-
     if (props.wordText) {
-      chrome.runtime.sendMessage({
-        action: ChromeAction.TranslateWord,
-        selectionText: props.selectionText,
-        wordText: props.wordText,
-      }, (res) => {
-        console.log({ translateWordContent: res })
-        setContent(res)
-        addFavoriteWords(props.wordText, props.selectionText, res)
-      }
-      )
+      chrome.runtime.sendMessage(
+        {
+          action: ChromeAction.TranslateWord,
+          selectionText: props.selectionText,
+          wordText: props.wordText,
+        },
+        (res) => {
+          console.log({ translateWordContent: res });
+          setContent(res);
+          addFavoriteWords(props.wordText, props.selectionText, res);
+        },
+      );
     }
-
   }, [props.wordText]);
   return (
-    <NextUIProvider>
-      <div style={{
-        position: 'fixed',
-        width: 400,
-        padding: 10,
-
-      }} className='bg-stone-200 rounded-lg'>
-        <div style={{
-          display: 'flex',
-
-          marginBottom: 10
-        }}>
-          <div style={{ fontSize: 16 }}>释义</div>
-        </div>
-
-        <Textarea
-          isDisabled
-          maxRows={20}
-          label
-          placeholder="解析中，请稍等"
-          value={content}
-        />
-
-      </div></NextUIProvider>
+    <div className="ait_popup_tainer">
+      <div style={{ fontSize: 16 }}>释义</div>
+      <div>
+        {content
+          ? content.split('\n').map((s) => {
+              return <div style={{ fontSize: 12, marginBottom: 5 }}>{s}</div>;
+            })
+          : '解析中，请稍等...'}
+      </div>
+    </div>
   );
 }
 

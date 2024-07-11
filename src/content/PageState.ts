@@ -202,7 +202,7 @@ export default class PageState {
                 }
                 const newNode = document.createElement('p');
                 (newNode as any)._$id = node._$id;
-                newNode.classList.add('translate_loading');
+                newNode.classList.add('ait_translate_loading');
                 (newNode as any).style.opacity = 0.6;
                 insertAfter(newNode, node);
                 this.loadingNode.push(newNode as any);
@@ -236,8 +236,8 @@ export default class PageState {
                 originNode._$translate = 'error';
             }
             if (inNode) {
-                inNode.classList.remove('translate_loading');
-                inNode.classList.add('translate_error');
+                inNode.classList.remove('ait_translate_loading');
+                inNode.classList.add('ait_translate_error');
                 inNode.textContent = `异常，可能是配置问题或者网络问题，点击重试`;
                 inNode.addEventListener('click', throttle(() => {
                     this.handlerRetry()
