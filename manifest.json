@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AiT",
-  "version": "1.0",
+  "version": "1.1",
   "description": "基于国内大模型实现的沉浸式翻译插件，支持星火，通义，kimi",
   "permissions": [
     "<all_urls>",
