@@ -108,6 +108,14 @@ const App = () => {
       );
     });
   }, 200);
+  const  extensionsid=()=> {
+    if (!!chrome.runtime) { // 方法一
+      return chrome.runtime?.id || '-1';
+    } else if (chrome.i18n) { // 方法二
+      return chrome.i18n.getMessage("@@extension_id") || '-1';
+    }
+    return '-1';
+  }
   return (
     <div className=" flex flex-col gap-4  justify-center">
       <div className="flex gap-2 justify-center items-center">
@@ -180,7 +188,7 @@ const App = () => {
           color="primary"
           onClick={() => {
             chrome.tabs.create({
-              url: 'chrome-extension://pbkjpicoggbcapencpgffcomimghdkpc/wordsheet.html',
+              url: 'chrome-extension://'+extensionsid()+'/wordsheet.html',
             });
           }}
         >
